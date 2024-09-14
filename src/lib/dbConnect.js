@@ -8,7 +8,7 @@ const dbConnect = async()=>{
         return;
    }
     try {
-        const connection = await mongoose.connect(process.env.MONGODB_URI);
+        const connection = await mongoose.connect(`${process.env.MONGODB_URI}/MessConnect`);
         connections.isConnected = connection.connections[0].readyState;
         console.log("Database connected successfully")
     } catch (error) {
