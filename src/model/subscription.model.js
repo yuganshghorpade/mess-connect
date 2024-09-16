@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
-import { User } from './user.model.js'
-import { Mess } from './mess.model.js'
+import User from './user.model.js'
+import Mess from './mess.model.js'
 
 const subscriptionSchema = new mongoose.Schema({
     user:{
@@ -27,4 +27,6 @@ const subscriptionSchema = new mongoose.Schema({
     timestamps:true
 })
 
-export const Subscription = mongoose.model('Subscription',subscriptionSchema)
+const Subscription = mongoose.models.Subscription || mongoose.model('Subscription', subscriptionSchema);
+
+export default Subscription;

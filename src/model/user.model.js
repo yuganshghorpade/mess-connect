@@ -1,6 +1,7 @@
-import { ApiError } from '@/utils/ApiError.js';
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
+import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken'
 
 const userSchema = new mongoose.Schema({
     username:{
@@ -63,14 +64,23 @@ userSchema.pre("save",async function (next) {
     if(!this.isModified("password")) return next();
 
     try {
+        console.log(this.password);
         this.password = await bcrypt.hash(this.password,10)
+        console.log(this.password);
         next()
     } catch (error) {
-        throw new ApiError(505,`An unexpected error occured while hashing the password. Error:-${error}`)
+        return NextResponse.json(
+            {
+                status: 505,
+                message: `An unexpected error occured while hashing the password. Error:-${error}`
+            }
+        )
     }
 })
 
 userSchema.methods.isPasswordCorrect = async function (password) {
+    console.log(this.password);
+    console.log(password);
     return await bcrypt.compare(password,this.password)
 }
 
@@ -78,7 +88,8 @@ userSchema.methods.generateAccessToken = function () {
     return jwt.sign({
         id:this._id,
         username:this.username,
-        email:this.email
+        email:this.email,
+        type:"user"
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
@@ -90,6 +101,7 @@ userSchema.methods.generateRefreshToken = function () {
     return jwt.sign({
         id:this._id,
         username:this.username,
+        type:"user"
     },
     process.env.REFRESH_TOKEN_SECRET,
     {

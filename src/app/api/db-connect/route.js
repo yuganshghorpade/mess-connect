@@ -1,5 +1,4 @@
 import dbConnect from "@/lib/dbConnect.js";
-import User from "@/model/user.model.js";
 import { NextResponse } from "next/server";
 
 export async function GET() {
