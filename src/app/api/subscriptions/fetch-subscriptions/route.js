@@ -20,6 +20,8 @@ export async function GET(request) {
             message:"Response fetched successfully"
         },{
             status:200
+        },{
+            response
         })
     } catch (error) {
         return NextResponse.json({

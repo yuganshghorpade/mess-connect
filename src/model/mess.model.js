@@ -1,5 +1,11 @@
 import mongoose from 'mongoose'
 
+const plate = {
+    price: Number,
+    menu: [String],
+    note: String
+}
+
 const messSchema = new mongoose.Schema({
     name:{
         type: String,
@@ -15,6 +21,11 @@ const messSchema = new mongoose.Schema({
         trim:true,
         match: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
     },
+    menuModel:[
+        {
+            type: plate
+        }
+    ],
     password:{
         type : String,
         required: true
@@ -54,9 +65,22 @@ const messSchema = new mongoose.Schema({
     verifyCodeExpiry:{
         type:Date
     },
+    location: {
+        type: {
+            type: String,
+            enum: ['Point'], // GeoJSON type
+            required: true
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            required: true
+        }
+    }
 },{
     timestamps:true
 })
+
+messSchema.index({ location: '2dsphere' });
 
 messSchema.pre("save",async function (next) {
     
