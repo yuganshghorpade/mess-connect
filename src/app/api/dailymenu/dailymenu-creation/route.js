@@ -1,9 +1,11 @@
+import dbConnect from "@/lib/dbConnect";
 import Dailymenu from "@/model/dailymenu.model";
 import { getDataFromToken } from "@/utils/getDataFromToken";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
     try {
+        await dbConnect()
         const {userId, type} = getDataFromToken(request);
         const {menu} = await request.json();
         if (type=="user") {

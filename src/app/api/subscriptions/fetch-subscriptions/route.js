@@ -1,9 +1,11 @@
+import dbConnect from "@/lib/dbConnect";
 import Subscription from "@/model/subscription.model";
 import { getDataFromToken } from "@/utils/getDataFromToken";
 import { NextResponse } from "next/server";
 
 export async function GET(request) {
     try {
+        await dbConnect();
         const {userId, type} = await getDataFromToken(request)
         await Subscription.updateExpiredSubscriptions(userId,type);
     

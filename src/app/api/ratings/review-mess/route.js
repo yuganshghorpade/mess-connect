@@ -4,7 +4,7 @@ import { getDataFromToken } from "@/utils/getDataFromToken";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
-    dbConnect();
+    await dbConnect();
     try {
         const {
             cleanliness,
