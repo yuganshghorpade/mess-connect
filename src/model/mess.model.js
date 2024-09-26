@@ -1,4 +1,6 @@
 import mongoose from 'mongoose'
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken'
 
 const plate = {
     price: Number,
@@ -69,11 +71,11 @@ const messSchema = new mongoose.Schema({
         type: {
             type: String,
             enum: ['Point'], // GeoJSON type
-            required: true
+            // required: true
         },
         coordinates: {
             type: [Number], // [longitude, latitude]
-            required: true
+            // required: true
         }
     }
 },{
@@ -90,12 +92,13 @@ messSchema.pre("save",async function (next) {
         this.password = await bcrypt.hash(this.password,10)
         next()
     } catch (error) {
-        return NextResponse.json(
-            {
-                status: 505,
-                message: `An unexpected error occured while hashing the password. Error:-${error}`
-            }
-        )
+        // return NextResponse.json(
+        //     {
+        //         status: 505,
+        //         message: `An unexpected error occured while hashing the password. Error:-${error}`
+        //     }
+        // )
+        console.error(error)
     }
 })
 

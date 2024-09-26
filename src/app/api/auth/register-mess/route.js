@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   await dbConnect();
+  console.log(NextResponse);
 
   try {
     const { name, email, password, address, contactNo, isPureVegetarian, openHours } = await request.json();
@@ -49,10 +50,12 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error registering mess:', error);
-    return NextResponse.json(
-      { success: false, message: 'Error registering mess' },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({
+      success:false,
+      message:`Some error occured while registering mess. Error:-${error}`
+  },{
+      status:500
+  })
   }
 }
