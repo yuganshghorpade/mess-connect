@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
-    await dbConnect();
+  await dbConnect();
 
     try {
         const { name, email, password, address, contactNo, isPureVegetarian, openHours } = await request.json();
@@ -41,15 +41,15 @@ export async function POST(request) {
 
         await newMess.save();
 
-        return NextResponse.json(
-            { success: true, message: 'Mess registered successfully. Please verify your account.' },
-            { status: 201 }
-        );
-    } catch (error) {
-        console.error('Error registering mess:', error);
-        return NextResponse.json(
-            { success: false, message: 'Error registering mess: ' + error.message },
-            { status: 500 }
-        );
-    }
+    return NextResponse.json(
+      { success: true, message: 'Mess registered successfully. Please verify your account.' },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('Error registering mess:', error);
+    return NextResponse.json(
+      { success: false, message: 'Error registering mess' },
+      { status: 500 }
+    );
+  }
 }
