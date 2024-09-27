@@ -1,133 +1,133 @@
-import mongoose from 'mongoose'
-
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 const plate = {
     price: Number,
     menu: [String],
-    note: String
-}
+    note: String,
+};
 
 const messSchema = new mongoose.Schema({
-    name:{
+    name: {
         type: String,
-        minLength:5,
-        trim:true,
-        required: true
+        minLength: 5,
+        trim: true,
+        required: true,
     },
-    email:{
-        type:String,
-        required:true,  
-        unique:true,
-        lowercase:true,
-        trim:true,
-        match: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true,
+        match: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
     },
-    menuModel:[
+    menuModel: [
         {
-            type: plate
-        }
+            type: plate,
+        },
     ],
-    password:{
-        type : String,
-        required: true
+    password: {
+        type: String,
+        required: true,
     },
     address: {
         type: String,
-        required: true
+        required: true,
     },
-    contactNo:{
+    contactNo: {
         type: String,
-        required: true
+        required: true,
     },
-    isPureVegetarian:{
+    isPureVegetarian: {
         type: Boolean,
     },
-    verificationStatus:{
+    verificationStatus: {
         type: Boolean,
-        default: false
+        default: false,
     },
-    openHours:{
-        type: String
+    openHours: {
+        type: String,
     },
-    isDeliveryAvailable:{
+    isDeliveryAvailable: {
         type: Boolean,
-        default: false
+        default: false,
     },
-    deliveryHours:{
-        type: String
+    deliveryHours: {
+        type: String,
     },
-    refreshToken:{
-        type:String
+    refreshToken: {
+        type: String,
     },
-    verifyCode:{
-        type:String,
-        match: /^[0-9]{6}$/
+    verifyCode: {
+        type: String,
+        match: /^[0-9]{6}$/,
     },
-    verifyCodeExpiry:{
-        type:Date
+    verifyCodeExpiry: {
+        type: Date,
     },
     location: {
         type: {
             type: String,
             enum: ['Point'], // GeoJSON type
-            required: true
         },
         coordinates: {
             type: [Number], // [longitude, latitude]
-            required: true
-        }
-    }
-},{
-    timestamps:true
-})
+        },
+    },
+}, {
+    timestamps: true,
+});
 
+// Create a 2dsphere index for geospatial queries
 messSchema.index({ location: '2dsphere' });
 
-messSchema.pre("save",async function (next) {
-    
-    if(!this.isModified("password")) return next();
+// Pre-save middleware to hash the password
+messSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
 
     try {
-        this.password = await bcrypt.hash(this.password,10)
-        next()
+        this.password = await bcrypt.hash(this.password, 10);
+        next();
     } catch (error) {
-        return NextResponse.json(
-            {
-                status: 505,
-                message: `An unexpected error occured while hashing the password. Error:-${error}`
-            }
-        )
+        next(error); // Pass the error to the next middleware
     }
-})
+});
+
 
 messSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcrypt.compare(password,this.password)
-}
+    return await bcrypt.compare(password, this.password);
+};
 
+// Method to generate access token
 messSchema.methods.generateAccessToken = function () {
-    return jwt.sign({
-        id:this._id,
-        username:this.username,
-        email:this.email,
-        type:"mess"
-    },
-    process.env.ACCESS_TOKEN_SECRET,
-    {
-        expiresIn:process.env.ACCESS_TOKEN_EXPIRY
-    })
-}
+    return jwt.sign(
+        {
+            id: this._id,
+            email: this.email,
+            type: "mess",
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+        }
+    );
+};
 
+// Method to generate refresh token
 messSchema.methods.generateRefreshToken = function () {
-    return jwt.sign({
-        id:this._id,
-        username:this.username,
-        type:"mess"
-    },
-    process.env.REFRESH_TOKEN_SECRET,
-    {
-        expiresIn:process.env.REFRESH_TOKEN_EXPIRY
-    })
-}
+    return jwt.sign(
+        {
+            id: this._id,
+            type: "mess",
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+        }
+    );
+};
 
+// Export the model
 const Mess = mongoose.models.Mess || mongoose.model('Mess', messSchema);
-
 export default Mess;
