@@ -8,6 +8,7 @@ export async function POST(request) {
 
     try {
         const { name, email, password, address, contactNo, isPureVegetarian, openHours } = await request.json();
+        
 
         // Check if all required fields are provided
         if (!name || !email || !password || !address || !contactNo) {

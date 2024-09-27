@@ -1,13 +1,7 @@
-<<<<<<< HEAD
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-=======
-import mongoose from 'mongoose'
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken'
 
->>>>>>> a900875577041148792e8f0a847b4796ab52a913
 const plate = {
     price: Number,
     menu: [String],
@@ -77,7 +71,6 @@ const messSchema = new mongoose.Schema({
         type: {
             type: String,
             enum: ['Point'], // GeoJSON type
-<<<<<<< HEAD
         },
         coordinates: {
             type: [Number], // [longitude, latitude]
@@ -86,18 +79,6 @@ const messSchema = new mongoose.Schema({
 }, {
     timestamps: true,
 });
-=======
-            // required: true
-        },
-        coordinates: {
-            type: [Number], // [longitude, latitude]
-            // required: true
-        }
-    }
-},{
-    timestamps:true
-})
->>>>>>> a900875577041148792e8f0a847b4796ab52a913
 
 // Create a 2dsphere index for geospatial queries
 messSchema.index({ location: '2dsphere' });
@@ -110,9 +91,6 @@ messSchema.pre("save", async function (next) {
         this.password = await bcrypt.hash(this.password, 10);
         next();
     } catch (error) {
-<<<<<<< HEAD
-        next(error); // Pass the error to the next middleware
-=======
         // return NextResponse.json(
         //     {
         //         status: 505,
@@ -120,7 +98,6 @@ messSchema.pre("save", async function (next) {
         //     }
         // )
         console.error(error)
->>>>>>> a900875577041148792e8f0a847b4796ab52a913
     }
 });
 

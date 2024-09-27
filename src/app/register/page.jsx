@@ -59,13 +59,14 @@ export default function Register() {
 
   // Function to handle mess registration
   const submitMessDetails = async () => {
+    console.log(messName,messEmail,messPassword,messContactNo,messAddress);
     try {
       const response = await axios.post('/api/auth/register-mess', {
-        messName,
-        messEmail,
-        messPassword,
-        messContactNo,
-        messAddress,
+        name:messName,
+        email:messEmail,
+        password:messPassword,
+        contactNo:messContactNo,
+        address:messAddress,
         isPureVegetarian,
       });
 
