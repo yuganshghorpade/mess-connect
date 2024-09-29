@@ -36,14 +36,14 @@ export default function Register() {
   const [isPureVegetarian, setIsPureVegetarian] = useState(false);
   const [messMessage, setMessMessage] = useState('');
 
-  // Function to handle user registration
+
   const submitUserDetails = async () => {
     try {
       const response = await axios.post('/api/auth/register-user', {
-        username,
-        email,
-        password,
-        contactNo,
+        username:username,
+        email:email,
+        password:password,
+        contactNo:contactNo,
       });
 
       if (response.data.success) {

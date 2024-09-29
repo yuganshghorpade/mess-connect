@@ -1,32 +1,37 @@
 'use client'
 import { useState } from "react";
-import { useRouter } from 'next/navigation';  // Correct import for App Router in Next.js 13
+import { useRouter } from 'next/navigation';  
 import axios from "axios";
 import Link from "next/link";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [accountType, setAccountType] = useState("user");  
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
-    const router = useRouter();  // Use Next.js router for redirection
+    const router = useRouter();  
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMessage("");  
         setSuccessMessage(""); 
         try {
-            const response = await axios.post(`/api/auth/login?acctype=user`, {
+            const response = await axios.post(`/api/auth/login?acctype=${accountType}`, { 
                 email,
                 password
             },{
-                withCredentials:true
+                withCredentials: true
             });
 
             if (response.data.success) {
                 setSuccessMessage("Login successful! Redirecting...");
                 setTimeout(() => {
-                    router.push('/');  // Redirect to home page after success
+                    if (accountType === 'user') {
+                        router.push('/user');  
+                    } else if (accountType === 'mess') {
+                        router.push('/owner'); 
+                    }
                 }, 1500);  // Optional: Delay redirection to show success message
             } else {
                 setErrorMessage(response.data.message);
@@ -62,6 +67,18 @@ export default function Login() {
                             required
                             style={styles.input}
                         />
+                    </div>
+                    <div style={styles.formGroup}>
+                        <label>Account Type</label>
+                        <select
+                            value={accountType}
+                            onChange={(e) => setAccountType(e.target.value)}
+                            required
+                            style={styles.input}
+                        >
+                            <option value="user">User</option>
+                            <option value="mess">Mess</option>
+                        </select>
                     </div>
                     <button type="submit" style={styles.btnLogin}>Login</button>
                 </form>

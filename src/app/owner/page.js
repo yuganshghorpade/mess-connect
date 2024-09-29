@@ -1,8 +1,8 @@
-import Header from "../mess-header/page"
-export default function(){
+'use client'
+export default function Owner(){
     return (
         <div>
-            <Header/>
+            
         </div>
     )
 }

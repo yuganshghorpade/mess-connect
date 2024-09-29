@@ -4,10 +4,23 @@ import Mess from "@/model/mess.model";
 import { NextResponse } from "next/server";
 
 export async function GET(request) {
-    await dbConnect()
+    await dbConnect();
+
     try {
-        const { longitude, latitude } = await request.json();
+        const { searchParams } = new URL(request.url);
+        const longitude = parseFloat(searchParams.get('longitude'));
+        const latitude = parseFloat(searchParams.get('latitude'));
+
+        if (!longitude || !latitude) {
+            return NextResponse.json({
+                success: false,
+                message: "Longitude and latitude are required",
+            }, { status: 400 });
+        }
+
         const userCoordinates = [longitude, latitude];
+
+        // Perform geoNear aggregation to get messes sorted by distance
         const messes = await Mess.aggregate([
             {
                 $geoNear: {
@@ -17,25 +30,35 @@ export async function GET(request) {
                 },
             },
         ]);
+
+        if (!messes || messes.length === 0) {
+            return NextResponse.json({
+                success: false,
+                message: "No nearby messes found",
+            }, { status: 404 });
+        }
+
         const messIds = messes.map((mess) => mess._id);
+
+        // Fetch daily menus for nearby messes and populate mess details
         const dailyMenus = await Dailymenu.find({ mess: { $in: messIds } })
             .populate("mess")
             .sort({ "mess.distance": 1 });
 
+        // Log the response before sending it
+        console.log("Fetched Daily Menus:", dailyMenus);
+
         return NextResponse.json({
-            success:true,
-            message:"Daily Menu fetched successfully"
-        },{
-            status:500
-        },{
-            response:dailyMenus
-        })
+            success: true,
+            message: "Daily Menu fetched successfully",
+            response: dailyMenus,
+        }, { status: 200 });
+
     } catch (error) {
+        console.error("Backend error:", error);
         return NextResponse.json({
-            success:false,
-            message:`Some error occured while fetching nearby messes daily menu.Error:-${error}`
-        },{
-            status:500
-        })
+            success: false,
+            message: `Error fetching daily menus: ${error.message}`,
+        }, { status: 500 });
     }
 }

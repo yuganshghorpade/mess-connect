@@ -1,23 +1,49 @@
-'use client'
+'use client';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { FaUserCircle } from "react-icons/fa";  // Profile icon
-
+import { FaUserCircle } from "react-icons/fa";
 
 export default function Header() {
     const [searchTerm, setSearchTerm] = useState("");
-    const [isLoggedIn, setIsLoggedIn] = useState(false);  // Track login state
-    const [userData, setUserData] = useState(null);  // Store user or mess owner data
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userData, setUserData] = useState(null);  
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
 
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-    };
+    // useEffect(() => {
+    //     const fetchUserData = async () => {
+    //         try {
+    //             // Check if a token exists in cookies
+    //             const token = document.cookie.split('; ').find(row => row.startsWith('authToken='));
+    //             if (token) {
+    //                 console.log("Token found:", token);  // Check if token is fetched correctly
+    //                 const response = await axios.get("/api/user/fetching-user-details", {
+    //                     headers: {
+    //                         Authorization: `Bearer ${token.split('=')[1]}`  // Extract token value from cookie
+    //                     },
+    //                     withCredentials: true
+    //                 });
+
+    //                 if (response.data) {
+    //                     console.log("User data:", response.data.user);  // Check if user data is fetched
+    //                     setUserData(response.data.user);  // Assuming user data is in `response.data.user`
+    //                     setIsLoggedIn(true);
+    //                 }
+    //             } else {
+    //                 console.log("No token found");
+    //             }
+    //         } catch (error) {
+    //             console.error("Error fetching user data", error);
+    //             setIsLoggedIn(false);
+    //         }
+    //     };
+
+    //     fetchUserData();  // Check login state on component mount
+    // }, []);
 
     const handleSearch = async (e) => {
         e.preventDefault();
@@ -39,28 +65,8 @@ export default function Header() {
         }
     };
 
-    // Mock login function (replace with actual login logic)
-    const handleLogin = async (email, password) => {
-        try {
-            const response = await axios.post(`/api/auth/login?acctype=user`, {
-                email,
-                password,
-            }, {
-                withCredentials: true,
-            });
-
-            if (response.data.success) {
-                setUserData(response.data.user);  // Store user/mess owner data
-                setIsLoggedIn(true);  // Update login status
-                setTimeout(() => {
-                    router.push('/');  // Redirect to homepage
-                }, 1500);  // Optional delay
-            } else {
-                console.error("Login failed:", response.data.message);
-            }
-        } catch (error) {
-            console.error("Error logging in", error);
-        }
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
     };
 
     return (
@@ -117,7 +123,7 @@ export default function Header() {
                         </div>
                     ) : (
                         <>
-                            <Link href="/login">
+                            {/* <Link href="/login">
                                 <Button className="bg-white text-green-500 hover:bg-green-100 transition-all rounded-full px-4 py-2 shadow-md">
                                     Login
                                 </Button>
@@ -126,7 +132,16 @@ export default function Header() {
                                 <Button className="bg-white text-green-500 hover:bg-green-100 transition-all rounded-full px-4 py-2 shadow-md">
                                     Sign In
                                 </Button>
-                            </Link>
+                            </Link> */}
+                             <Link href="/user">
+                        <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Home</span>
+                    </Link>
+                    <Link href="/deals">
+                        <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Deals</span>
+                    </Link>
+                    <Link href="/user/profile">
+                        <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Profile</span>
+                    </Link>
                         </>
                     )}
                 </div>
@@ -134,25 +149,16 @@ export default function Header() {
 
             {isMenuOpen && (
                 <div className="flex flex-col items-center space-y-4 bg-gradient-to-r from-green-400 via-green-300 to-green-500 py-4 md:hidden">
-                    <Link href="/">
+                    <Link href="/user">
                         <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Home</span>
                     </Link>
-                    <Link href="/deals">
+                    <Link href="/user/deals">
                         <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Deals</span>
                     </Link>
-                    <Link href="/profile">
+                    <Link href="/user/profile">
                         <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Profile</span>
                     </Link>
-                    <Link href="/login">
-                        <Button className="bg-white text-green-500 hover:bg-green-100 transition-all rounded-full px-4 py-2 shadow-md">
-                            Login
-                        </Button>
-                    </Link>
-                    <Link href="/register">
-                        <Button className="bg-white text-green-500 hover:bg-green-100 transition-all rounded-full px-4 py-2 shadow-md">
-                            Sign In
-                        </Button>
-                    </Link>
+                  
                 </div>
             )}
         </div>
