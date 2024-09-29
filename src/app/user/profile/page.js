@@ -18,6 +18,7 @@ export default function Profile() {
       try {
         const token = getCookie('accessToken');
 
+<<<<<<< HEAD
         const response = await axios.get("/api/user/fetching-user-details", {
           withCredentials: true, // Ensure cookies are included if required
           headers: {
@@ -27,6 +28,13 @@ export default function Profile() {
 
         console.log("Response from server:", response);
 
+=======
+        // Make a request to the backend, including the token in the Authorization header
+        const response = await axios.get("/api/user/fetching-user-details",{
+          withCredentials:true
+        })
+        console.log(response)
+>>>>>>> d2d790df47a788e47307aceab490205afe4dab4c
         // Check if response data contains user information
         if (response.data.success) {
           setUserData(response.data.response);

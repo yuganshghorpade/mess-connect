@@ -3,6 +3,9 @@ import User from "@/model/user.model.js";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import Mess from "@/model/mess.model";
+import Cookie from 'js-cookie';
+import { serialize } from 'cookie';
+
 
 export async function POST(request) {
     await dbConnect();
@@ -59,36 +62,71 @@ export async function POST(request) {
         user.refreshToken = refreshToken;
         await user.save();
 
-        cookies().set({
-            name: "accessToken",
-            value: accessToken,
-            httpOnly: true,
-            path: "/",
-            secure: true, // Set to true in production for HTTPS
-            maxAge: 60 * 60 * 24, // Set expiry for 15 minutes (adjust as needed)
-            sameSite: "strict",
-        });
+        // cookies().set({
+        //     name: "accessToken",
+        //     value: accessToken,
+        //     httpOnly: true,
+        //     path: "/",
+        //     secure: true, // Set to true in production for HTTPS
+        //     maxAge: 60 * 60 * 24, // Set expiry for 15 minutes (adjust as needed)
+        //     sameSite: "strict",
+        // });
 
-        // Set refreshToken cookie
-        cookies().set({
-            name: "refreshToken",
-            value: refreshToken,
-            httpOnly: true,
-            path: "/",
-            secure: true,
-            maxAge: 60 * 60 * 24 * 7, // Set expiry for 7 days
-            sameSite: "strict",
-        });
+        // // Set refreshToken cookie
+        // cookies().set({
+        //     name: "refreshToken",
+        //     value: refreshToken,
+        //     httpOnly: true,
+        //     path: "/",
+        //     secure: true,
+        //     maxAge: 60 * 60 * 24 * 7, // Set expiry for 7 days
+        //     sameSite: "strict",
+        // });
 
-        return NextResponse.json(
+        // NextResponse.setHeader('Set-Cookie', [
+        //     serialize('accessToken', accessToken, { path: '/', httpOnly: true, maxAge: 60 * 60 * 24 }),
+        //     serialize('refreshToken', refreshToken, { path: '/', httpOnly: true, maxAge: 60 * 60 * 24 * 7 }),
+        // ]);
+        // return NextResponse.json(
+        //     {
+        //         success: true,
+        //         message: "Login successful",
+        //         accessToken,
+        //         refreshToken,
+        //     },
+        //     { status: 200 }
+        // );
+
+        const cookieHeaders = [
+            serialize('accessToken', accessToken, {
+                path: '/',
+                httpOnly: true,
+                maxAge: 60 * 60 * 24, // 1 day
+                secure: process.env.NODE_ENV === 'production', // Set to true in production
+                sameSite: 'strict',
+            }),
+            serialize('refreshToken', refreshToken, {
+                path: '/',
+                httpOnly: true,
+                maxAge: 60 * 60 * 24 * 7, // 7 days
+                secure: process.env.NODE_ENV === 'production', // Set to true in production
+                sameSite: 'strict',
+            }),
+        ];
+
+        // Set the cookies in the response
+        const response = NextResponse.json(
             {
                 success: true,
                 message: "Login successful",
-                accessToken,
-                refreshToken,
             },
             { status: 200 }
         );
+
+        cookieHeaders.forEach(cookie => response.headers.append('Set-Cookie', cookie));
+
+        return response;
+
     } catch (error) {
         console.error("Error during login:", error);
         return NextResponse.json(
