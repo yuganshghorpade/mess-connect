@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation"; // Use 'next/navigation' instead of 'next/router'
+import { useRouter } from "next/navigation"; 
 import Header from "../header/page";
 import Footer from "@/components/ui/footer";
+
 
 export default function Profile() {
   const [userData, setUserData] = useState(null);
@@ -15,21 +16,27 @@ export default function Profile() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        const token = getCookie('accessToken');
 
-        // Make a request to the backend, including the token in the Authorization header
         const response = await axios.get("/api/user/fetching-user-details", {
-          withCredentials:true
+          withCredentials: true, // Ensure cookies are included if required
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in headers
+          },
         });
-        console.log(response)
+
+        console.log("Response from server:", response);
+
         // Check if response data contains user information
         if (response.data.success) {
           setUserData(response.data.response);
         } else {
-          setError("Failed to load user data.");
+          setError(response.data.message || "Failed to load user data.");
         }
-        setLoading(false);
       } catch (err) {
-        setError("Failed to load user data in catch.");
+        console.error("Error fetching user data:", err);
+        setError("Failed to load user data. Error: " + err.message);
+      } finally {
         setLoading(false);
       }
     };
