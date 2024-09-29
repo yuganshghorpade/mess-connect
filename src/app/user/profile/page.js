@@ -17,9 +17,9 @@ export default function Profile() {
       try {
 
         // Make a request to the backend, including the token in the Authorization header
-        const response = await axios.get("/api/user/fetching-user-details", {
+        const response = await axios.get("/api/user/fetching-user-details",{
           withCredentials:true
-        });
+        })
         console.log(response)
         // Check if response data contains user information
         if (response.data.success) {
