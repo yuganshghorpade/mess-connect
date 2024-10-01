@@ -12,17 +12,21 @@ export default function Content() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Get user's current location using Geolocation API
+    
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
 
         try {
-          // Fetch local mess daily menu data from backend using Axios
-          const response = await axios.get('/api/dailymenu/fetching-dailymenu', {
-            params: { latitude, longitude },
-          });
-
+        //   // Fetch local mess daily menu data from backend using Axios
+        //   const response = await axios.get(`/api/mess/fetch-nearby-messes?latitude=${latitude}&longitude=${longitude}`,{
+        //     withCredentials:true
+        // });
+            const response = await axios.post(`/api/mess/fetch-nearby-messes`,{
+              latitude,longitude
+            },{
+              withCredentials:true
+            })
           if (response.data.success) {
             setLocalMess(response.data.response);
           } else {
@@ -58,7 +62,7 @@ export default function Content() {
           <p className="text-red-500">{error}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mx-4 my-5">
-            {localMess.length > 0 ? (
+            {localMess ? (
               localMess.map((menu, index) => (
                 <Card key={index} className="shadow-lg rounded-lg overflow-hidden">
                   <div className="relative w-full h-48">

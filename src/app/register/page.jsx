@@ -18,8 +18,11 @@ import {
 } from "@/components/ui/tabs";
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
+
 
 export default function Register() {
+  const router = useRouter();
   // State for user registration
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -48,6 +51,8 @@ export default function Register() {
 
       if (response.data.success) {
         setUserMessage('Registration successful! Please verify your account.');
+        router.push("/login");
+         
       } else {
         setUserMessage(response.data.message);
       }

@@ -33,9 +33,9 @@ export async function GET(request) {
 
         if (!messes || messes.length === 0) {
             return NextResponse.json({
-                success: false,
+                success: true,
                 message: "No nearby messes found",
-            }, { status: 404 });
+            }, { status: 202 });
         }
 
         const messIds = messes.map((mess) => mess._id);

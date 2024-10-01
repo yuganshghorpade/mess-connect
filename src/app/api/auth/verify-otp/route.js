@@ -1,3 +1,4 @@
+'use client'
 import dbConnect from '@/lib/dbConnect.js';
 import User from '@/model/user.model.js';
 import Mess from '@/model/mess.model.js';
@@ -5,9 +6,8 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   await dbConnect();
-
   try {
-    const { email, verifyCode} = await request.json(); // userType = 'user' or 'mess'
+    const { email, verifyCode} = await request.json();
     const url = new URL(request.url);
     const queryParams = new URLSearchParams(url.search);
     const userType = queryParams.get("acctype");

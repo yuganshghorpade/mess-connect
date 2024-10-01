@@ -41,11 +41,26 @@ export async function POST(request) {
             );
         }
 
-        if (!user.isVerified) {
-            return NextResponse.json(
-                { success: false, message: "Please verify your account first" },
-                { status: 403 }
-            );
+        // if (!user.isVerified || !user.verificationStatus) {
+        //     return NextResponse.json(
+        //         { success: false, message: "Please verify your account first" },
+        //         { status: 403 }
+        //     );
+        // }
+        if (type=='user') {
+            if (!user.isVerified) {
+                return NextResponse.json(
+                    { success: false, message: "Please verify your account first" },
+                    { status: 403 }
+                );
+            }
+        }else{
+            if (!user.verificationStatus) {
+                return NextResponse.json(
+                    { success: false, message: "Please verify your account first" },
+                    { status: 403 }
+                );
+            }
         }
 
 
