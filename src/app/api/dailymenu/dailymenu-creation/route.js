@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 export async function POST(request) {
     try {
         await dbConnect()
-        const {userId, type} = getDataFromToken(request);
+        const {id, type} = getDataFromToken(request);
         const {menu} = await request.json();
         if (type=="user") {
             return NextResponse.json({
@@ -16,7 +16,7 @@ export async function POST(request) {
                 status:400
             })
         }
-        const existingMenu = await Dailymenu.findOne({mess:userId})
+        const existingMenu = await Dailymenu.findOne({mess:id})
         if (existingMenu) {
             return NextResponse.json({
                 success:false,
@@ -26,7 +26,7 @@ export async function POST(request) {
             })
         }
         const response = await Dailymenu.create({
-            mess:userId,
+            mess:id,
             menu
         })
         return NextResponse.json({

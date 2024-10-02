@@ -6,12 +6,12 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
     try {
         await dbConnect();
-        const {userId, type} = await getDataFromToken(request)
-        await Subscription.updateExpiredSubscriptions(userId,type);
+        const {id, type} = await getDataFromToken(request)
+        await Subscription.updateExpiredSubscriptions(id,type);
     
         const query = type === "user" 
-            ? { user : userId } 
-            : { mess : userId }
+            ? { user : id } 
+            : { mess : id }
         
         const response = await Subscription.find(query)
         .populate("mess user")
@@ -19,11 +19,10 @@ export async function GET(request) {
     
         return NextResponse.json({
             success:true,
-            message:"Response fetched successfully"
+            message:"Response fetched successfully",
+            response
         },{
             status:200
-        },{
-            response
         })
     } catch (error) {
         return NextResponse.json({

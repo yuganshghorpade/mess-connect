@@ -7,7 +7,8 @@ import { NextResponse } from "next/server";
 export async function POST(request){
     await dbConnect();
     try {
-        const {userid,type} = await getDataFromToken(request);
+        const {id,type} = await getDataFromToken(request);
+        console.log('userid', id)
         const {messId,mealType,durationInMilliseconds} = await request.json();
         if (type=="mess") {
             return NextResponse.json({
@@ -17,7 +18,7 @@ export async function POST(request){
                 status:401
             })
         }
-        const user = await User.findById(userid)
+        const user = await User.findById(id)
         if (!user) {
             return NextResponse.json({
                 success:false,
@@ -30,7 +31,7 @@ export async function POST(request){
         }
 
         const existingSubscription = await Subscription.findOne({
-            user:userid,
+            user:id,
             mealType:mealType,
             status:'Active'
         })
@@ -55,7 +56,7 @@ export async function POST(request){
         // }
 
         const subscription = await Subscription.create({
-            user : userid,
+            user : id,
             mess : messId,
             mealType : mealType,
             status : existingSubscription ? "Queued" : "Active",

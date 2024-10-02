@@ -39,7 +39,7 @@ export async function POST(request) {
         password: hashedPassword, // Store hashed password
         verifyCode,
         verifyCodeExpiry: expiryDate,
-        isVerified: false, // Mark as not verified initially
+        isVerified: true, // Mark as not verified initially
         contactNo,
       });
 

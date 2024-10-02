@@ -8,23 +8,23 @@ export async function POST(request){
     const radiusInRadians = radiusInKm / 6378.1;
 
     const { latitude, longitude } = await request.json()
-    const userCoordinates = [longitude,latitude]
-
+    const userCoordinates = [latitude,longitude]
+    console.log('userCoordinates', userCoordinates)
     try {
         const nearbyMesses = await Mess.find({
             location: {
                 $geoWithin: {
                     $centerSphere: [userCoordinates, radiusInRadians]
                 }
-            }
-        })
+            }})
+        // }).select("-password -refreshToken -verifyCode verifyCodeExpiry")
+        console.log('nearbymesses', nearbyMesses);
         return NextResponse.json({
             success:true,
-            message:"Messes fetched successfully"
+            message:"Messes fetched successfully",
+            messes:nearbyMesses
         },{
             status:200
-        },{
-            nearbyMesses
         })
     } catch (error) {
         return NextResponse.json({

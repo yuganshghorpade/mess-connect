@@ -10,6 +10,7 @@ export default function Content() {
   const [localMess, setLocalMess] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
 
   useEffect(() => {
     
@@ -23,12 +24,14 @@ export default function Content() {
         //     withCredentials:true
         // });
             const response = await axios.post(`/api/mess/fetch-nearby-messes`,{
-              latitude,longitude
+              latitude: position.coords.latitude ,
+              longitude : position.coords.longitude
             },{
               withCredentials:true
             })
+            console.log(response);
           if (response.data.success) {
-            setLocalMess(response.data.response);
+            setLocalMess(response.data.messes);
           } else {
             setError(response.data.message);
           }
@@ -67,8 +70,8 @@ export default function Content() {
                 <Card key={index} className="shadow-lg rounded-lg overflow-hidden">
                   <div className="relative w-full h-48">
                     <Image
-                      src={menu.mess.image} 
-                      alt={menu.mess.name}
+                      src="/assets/mess.jpeg"
+                      alt="mess image"
                       fill
                       className="object-cover"
                     />
@@ -76,34 +79,38 @@ export default function Content() {
 
                   {/* Mess Details */}
                   <CardContent className="p-4">
-                    <h3 className="text-lg font-semibold">{menu.mess.name}</h3>
-                    <p className="text-gray-600 mt-2">{menu.mess.description}</p>
+                    <h3 className="text-lg font-semibold">{menu.name}</h3>
+                    <p className="text-gray-600 mt-2">{menu.address}</p>
 
                     {/* Daily Menu */}
                     <div className="mt-4">
                       <h4 className="text-md font-semibold">Today's Menu:</h4>
                       <ul className="list-disc list-inside text-gray-700 mt-2">
-                        {menu.menuItems && Array.isArray(menu.menuItems) && menu.menuItems.length > 0 ? (
+                        {/* {menu.menuItems && Array.isArray(menu.menuItems) && menu.menuItems.length > 0 ? (
                           menu.menuItems.map((item, idx) => (
                             <li key={idx}>{item}</li>
                           ))
                         ) : (
                           <li>No menu available</li>
-                        )}
+                        )} */}
                       </ul>
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-between items-center p-4 bg-gray-100">
-                    <span className="text-gray-600 text-sm">{menu.mess.location}</span>
+                    {/* <span className="text-gray-600 text-sm">{menu.location}</span> */}
 
-                    <Link href={`/mess/${menu.mess._id}`}>
+                    <Link href={`/user/mess/${menu._id}`}>
                       <Button className="bg-blue-500 text-white">View Details</Button>
                     </Link>
                   </CardFooter>
                 </Card>
               ))
             ) : (
+              
+              <>
               <p>No nearby messes found.</p>
+              <p>{}</p>
+              </>
             )}
           </div>
         )}

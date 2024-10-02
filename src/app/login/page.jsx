@@ -3,8 +3,11 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation';  
 import axios from "axios";
 import Link from "next/link";
+import { Loader, Loader2 } from "lucide-react";
 
 export default function Login() {
+
+    const [isLoading, setIsLoading] = useState(false)
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [accountType, setAccountType] = useState("user");  
@@ -13,6 +16,7 @@ export default function Login() {
     const router = useRouter();  
 
     const handleSubmit = async (e) => {
+        setIsLoading(true)
         e.preventDefault();
         setErrorMessage("");  
         setSuccessMessage(""); 
@@ -38,6 +42,8 @@ export default function Login() {
             }
         } catch (error) {
             setErrorMessage(`Login failed. Please check your details. Error: ${error}`);
+        }finally{
+            setIsLoading(false)
         }
     };
 
@@ -72,7 +78,11 @@ export default function Login() {
                         <label>Account Type</label>
                         <select
                             value={accountType}
-                            onChange={(e) => setAccountType(e.target.value)}
+                            onChange={(e) => {
+                                setEmail("")
+                                setPassword("")
+                                setAccountType(e.target.value)
+                            }}
                             required
                             style={styles.input}
                         >
@@ -80,7 +90,13 @@ export default function Login() {
                             <option value="mess">Mess</option>
                         </select>
                     </div>
-                    <button type="submit" style={styles.btnLogin}>Login</button>
+                    {isLoading ? (<>
+                    <Loader2 />
+                        <button type="submit" disabled style={styles.btnLogin}>Please Wait</button>
+                        </>
+                    ) : (
+                        <button type="submit" style={styles.btnLogin}>Login</button>
+                    )}
                 </form>
                 {errorMessage && <div style={styles.errorMessage}>{errorMessage}</div>}
                 {successMessage && <div style={styles.successMessage}>{successMessage}</div>}

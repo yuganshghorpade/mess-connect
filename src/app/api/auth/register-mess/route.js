@@ -37,7 +37,7 @@ export async function POST(request) {
             openHours: openHours || "",
             verifyCode: Math.floor(100000 + Math.random() * 900000).toString(),
             verifyCodeExpiry: new Date(Date.now() + 3600000), // 1 hour from now
-            verificationStatus: false,
+            verificationStatus: true,
         });
 
         await newMess.save();

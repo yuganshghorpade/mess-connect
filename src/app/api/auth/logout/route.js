@@ -9,13 +9,13 @@ export async function POST(request) {
   await dbConnect();
 
   try {
-    const {userid,userType} = await getDataFromToken(request);
+    const {id,type} = await getDataFromToken(request);
 
     let account;
-    if (userType === 'user') {
-      account = await User.findById(userid)
-    } else if (userType === 'mess') {
-      account = await Mess.findById(userid);
+    if (type === 'user') {
+      account = await User.findById(id)
+    } else if (type === 'mess') {
+      account = await Mess.findById(id);
     }
 
     if (!account) {

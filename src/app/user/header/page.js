@@ -14,6 +14,18 @@ export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
 
+    const logoutUser = async()=>{
+        try {
+            const response = await axios.post("/api/auth/logout",{},{
+                withCredentials:true
+            })
+            router.replace("/login")
+            console.log(response);
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     // useEffect(() => {
     //     const fetchUserData = async () => {
     //         try {
@@ -142,6 +154,7 @@ export default function Header() {
                     <Link href="/user/profile">
                         <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Profile</span>
                     </Link>
+                    <Button onClick={logoutUser}>Logout</Button>
                         </>
                     )}
                 </div>

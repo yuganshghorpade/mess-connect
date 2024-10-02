@@ -19,7 +19,7 @@ export async function POST(request) {
         const queryParams = new URLSearchParams(url.search);
         const messId = queryParams.get("messId");
 
-        const { userId, type } = getDataFromToken();
+        const { id, type } = getDataFromToken();
         if (type == "mess") {
             return NextResponse.json(
                 {
@@ -32,7 +32,7 @@ export async function POST(request) {
             );
         }
         const rating = await Rating.create({
-            user:userId,
+            user:id,
             mess:messId,
             cleanliness,
             foodQuality,

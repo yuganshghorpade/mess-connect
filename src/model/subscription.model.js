@@ -38,12 +38,13 @@ subscriptionSchema.statics.updateExpiredSubscriptions = async function (
     type
 ) {
     try {
+        const now = Date.now();
         const query =
             type === "user"
                 ? { user: id, expiry: { $lt: now }, status: "Active" }
                 : { mess: id, expiry: { $lt: now }, status: "Active" };
 
-        const now = Date.now();
+        
         const result = await this.updateMany(query, {
             $set: { status: "Expired" },
         });

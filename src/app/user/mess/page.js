@@ -18,7 +18,7 @@ const SubscribeMess = () => {
 
     try {
       const durationInMilliseconds = parseInt(duration) * 24 * 60 * 60 * 1000; 
-      const response = await axios.post('\api\subscriptions\create-subscription', {
+      const response = await axios.post('/api/subscriptions/create-subscription', {
         messId:messId,
         mealType:mealType,
         durationInMilliseconds:durationInMilliseconds
