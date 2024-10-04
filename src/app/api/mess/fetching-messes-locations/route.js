@@ -5,14 +5,13 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
     await dbConnect();
     try {
-        const messes = await Mess.find({}, 'name location.coordinates');
+        const messes = await Mess.find();
         return NextResponse.json({
             success:true,
-            message:"Locations fetched successfully"
+            message:"Locations fetched successfully",
+            data:messes
         },{
             status:200
-        },{
-            data:messes
         })
     } catch (error) {
         return NextResponse.json({
