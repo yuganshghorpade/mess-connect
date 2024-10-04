@@ -2,7 +2,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
-function page() {
+function Access() {
 
     const [location, setLocation] = useState({ latitude: null, longitude: null });
   const [error, setError] = useState(null);
@@ -60,4 +60,4 @@ function page() {
         {location.latitude}, {location.longitude}</div>;
 }
 
-export default page;
+export default Access;

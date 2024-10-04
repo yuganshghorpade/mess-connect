@@ -22,7 +22,7 @@ export async function POST(request) {
                 success:false,
                 message: "You cannot set more than one daily menu... Please update the already created menu"
             },{
-                status:400
+                status:401
             })
         }
         const response = await Dailymenu.create({

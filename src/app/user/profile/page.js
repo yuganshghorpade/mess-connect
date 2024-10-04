@@ -1,13 +1,16 @@
-"use client";
-
+'use client';
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import Header from "../header/page";
 import Footer from "@/components/ui/footer";
+import axios from "axios";
+
+// Import icons from one version (solid in this case)
+import { MapPinIcon, UserIcon } from '@heroicons/react/24/solid';
 
 export default function Profile() {
     const [userData, setUserData] = useState(null);
+    const [subscriptions, setSubscriptions] = useState([]); // State for subscriptions
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const router = useRouter();
@@ -15,23 +18,15 @@ export default function Profile() {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                // const token = getCookie('accessToken');
-
-                // Make a request to the backend, including the token in the Authorization header
+                // Fetch user details
                 const response = await axios.get(
                     "/api/user/fetching-user-details",
-                    {
-                        withCredentials: true,
-                    }
+                    { withCredentials: true }
                 );
-                console.log(response);
-                // Check if response data contains user information
                 if (response.data.success) {
                     setUserData(response.data.response);
                 } else {
-                    setError(
-                        response.data.message || "Failed to load user data."
-                    );
+                    setError(response.data.message || "Failed to load user data.");
                 }
             } catch (err) {
                 console.error("Error fetching user data:", err);
@@ -42,87 +37,114 @@ export default function Profile() {
         };
 
         const fetchSubscription = async () => {
-          try {
-            const response = await axios.get("/api/subscriptions/fetch-subscriptions",{
-              withCredentials:true
-            })
-            console.log(response);
-          } catch (error) {
-            console.error(error)
-          }
+            try {
+                const response = await axios.get(
+                    "/api/subscriptions/fetch-subscriptions",
+                    { withCredentials: true }
+                );
+                if (response.data.success) {
+                    setSubscriptions(response.data.response); // Store subscription data
+                } else {
+                    console.error("Failed to load subscriptions:", response.data.message);
+                }
+            } catch (error) {
+                console.error("Error fetching subscriptions:", error);
+            }
         };
+
         fetchUserData();
-        fetchSubscription()
+        fetchSubscription();
     }, [router]);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div className="flex items-center justify-center min-h-screen text-lg text-gray-700">Loading...</div>;
     }
 
     if (error) {
-        return <div>{error}</div>;
+        return <div className="flex items-center justify-center min-h-screen text-lg text-red-500">{error}</div>;
     }
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50">
+        <div className="flex flex-col min-h-screen bg-gray-100">
             <Header />
             <main className="flex-grow">
-                <div className="container mx-auto p-6 sm:p-8 lg:p-12">
-                    <h1 className="text-3xl font-extrabold text-gray-800 mb-6">
-                        Profile Page
-                    </h1>
-                    {userData ? (
-                        <div className="bg-white shadow-lg rounded-lg p-8 sm:p-10 lg:p-12">
-                            <div className="flex items-center mb-6">
-                                {/* User Icon */}
-                                <div className="bg-gray-200 rounded-full p-2 mr-4">
-                                    <svg
-                                        className="w-10 h-10 text-gray-500"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M5.121 17.804A13.937 13.937 0 0112 15.944c3.122 0 6.008 1.097 8.121 2.86M12 12a5 5 0 100-10 5 5 0 000 10zm0 2a9 9 0 00-9 9h18a9 9 0 00-9-9z"
-                                        />
-                                    </svg>
+                <div className="container mx-auto px-4 py-12 sm:px-8 lg:px-16">
+                    <div className="bg-white shadow-xl rounded-lg p-8 lg:p-12">
+                        {/* User Details Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-1 flex flex-col items-center text-center">
+                                <div className="w-28 h-28 bg-gray-200 rounded-full p-3">
+                                    <UserIcon className="w-full h-full text-gray-500" />
                                 </div>
-                                {/* Username */}
-                                <h2 className="text-2xl font-semibold text-gray-900">
+                                <h2 className="text-2xl font-bold text-gray-900 mt-4">
                                     {userData.username}
                                 </h2>
+                                <p className="text-gray-600 mt-2">{userData.email}</p>
+                                <p className="text-gray-600">{userData.contactNo}</p>
                             </div>
-                            <div className="text-gray-700 space-y-3">
-                                <p>
-                                    <strong>Email:</strong> {userData.email}
-                                </p>
-                                <p>
-                                    <strong>Contact:</strong>{" "}
-                                    {userData.contactNo}
-                                </p>
-                                {userData.type === "mess" && (
-                                    <>
-                                        <p>
-                                            <strong>Mess Name:</strong>{" "}
-                                            {userData.messName}
+
+                            <div className="lg:col-span-2 space-y-6">
+                                <h3 className="text-xl font-semibold text-gray-800">Profile Information</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-gray-700">
+                                            <strong>Description:</strong> {userData.description}
                                         </p>
-                                        <p>
-                                            <strong>Address:</strong>{" "}
-                                            {userData.address}
+                                    </div>
+                                    <div>
+                                        <p className="flex items-center text-gray-700">
+                                            <MapPinIcon className="w-5 h-5 mr-2 text-green-600" />
+                                            <strong>Location:</strong>{" "}
+                                            {userData.location && userData.location.coordinates
+                                                ? `Lat: ${userData.location.coordinates[0]}, Long: ${userData.location.coordinates[1]}`
+                                                : "Location not available"}
                                         </p>
-                                    </>
-                                )}
+                                    </div>
+                                    {userData.type === "mess" && (
+                                        <>
+                                            <div>
+                                                <p className="text-gray-700">
+                                                    <strong>Mess Name:</strong> {userData.messName}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-700">
+                                                    <strong>Address:</strong> {userData.address}
+                                                </p>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    ) : (
-                        <p className="text-red-500 text-lg">
-                            No user data available
-                        </p>
-                    )}
+                    </div>
+
+                    {/* Subscriptions Section */}
+                    <div className="mt-12">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6">Subscriptions</h2>
+                        {subscriptions.length > 0 ? (
+                            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {subscriptions.map((subscription) => (
+                                    <li key={subscription._id} className="bg-white p-6 rounded-lg shadow-md">
+                                        <p className="text-gray-900 font-semibold">
+                                            {subscription.mess ? subscription.mess.name : subscription.user.username}
+                                        </p>
+                                        <p className="text-gray-600 mt-2">
+                                            <strong>Start Date:</strong> {new Date(subscription.startDate).toLocaleDateString()}
+                                        </p>
+                                        <p className="text-gray-600">
+                                            <strong>End Date:</strong> {new Date(subscription.endDate).toLocaleDateString()}
+                                        </p>
+                                        <p className={`mt-2 font-semibold ${subscription.isActive ? "text-green-600" : "text-red-600"}`}>
+                                            {subscription.status ? "Active" : "Expired"}
+                                        </p>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">No subscriptions found.</p>
+                        )}
+                    </div>
                 </div>
             </main>
             <Footer />

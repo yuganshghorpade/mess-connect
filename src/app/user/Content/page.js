@@ -99,7 +99,7 @@ export default function Content() {
                   <CardFooter className="flex justify-between items-center p-4 bg-gray-100">
                     {/* <span className="text-gray-600 text-sm">{menu.location}</span> */}
 
-                    <Link href={`/user/mess/${menu._id}`}>
+                    <Link href={`/mess/${menu._id}`}>
                       <Button className="bg-blue-500 text-white">View Details</Button>
                     </Link>
                   </CardFooter>

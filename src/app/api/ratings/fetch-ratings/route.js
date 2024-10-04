@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import Rating from "@/model/ratings.model";
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
 export async function GET(request) {
@@ -42,20 +43,21 @@ export async function GET(request) {
             {
                 success: true,
                 message: "Mess ratings fetched successfully",
+                messRatings
             },
             {
                 status: 200,
-            },{
-                messRatings
             }
         );
     } catch (error) {
+        console.error(error)
         return NextResponse.json(
             {
                 success: false,
                 message: `Some error occured while fetching mess ratings.Error:-${error}`,
+                
             },
-            {
+            { 
                 status: 500,
             }
         );
