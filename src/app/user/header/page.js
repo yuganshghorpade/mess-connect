@@ -154,7 +154,8 @@ export default function Header() {
                     <Link href="/user/profile">
                         <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Profile</span>
                     </Link>
-                    <Button onClick={logoutUser}>Logout</Button>
+                    <Button onClick={logoutUser} className="bg-white text-gray-800 hover:bg-white-300 rounded-xl px-4 py-2">Logout</Button>
+
                         </>
                     )}
                 </div>

@@ -1,7 +1,9 @@
 "use client";
-
+import Header from "./header/page";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Footer from "@/components/ui/footer";
+import SetDailyMenu from "./menuCreation/page";
 
 export default function Owner() {
     const [userData, setUserData] = useState(null);
@@ -77,7 +79,17 @@ export default function Owner() {
         //     latitude: location.latitude
         //   })
     }
-    return <div>
-        <button className="bg-green-400" onClick={setMessLocation}>Calibrate location</button>
-    </div>;
+
+    return <div className="flex flex-col min-h-screen">
+    <Header />
+    
+    <main className="flex-grow">
+      {/* Main content goes here */}
+      <button className="bg-green-400" onClick={setMessLocation}>Calibrate location</button>
+            <SetDailyMenu/>
+    </main>
+  
+    <Footer />
+  </div>
+  
 }

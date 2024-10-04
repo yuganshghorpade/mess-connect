@@ -76,7 +76,8 @@ export default function Register() {
       });
 
       if (response.data.success) {
-        setMessMessage('Mess registration successful! Please verify your account.');
+        setMessMessage('Mess registration successful!Redirecting to login page.');
+        router.push('/owner')
       } else {
         setMessMessage(response.data.message);
       }
