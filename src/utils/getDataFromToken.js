@@ -55,6 +55,7 @@ export const getDataFromToken = async (request) => {
 
         // Verify and decode the token
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        console.log('decodedtoken', decodedToken)
 
         // Return ID and type from the token payload
         return { id: decodedToken.id, type: decodedToken.type };
