@@ -91,7 +91,7 @@ export default function Login() {
                         </select>
                     </div>
                     {isLoading ? (<>
-                    <Loader2 />
+                    <Loader2 className="animate-spin" />
                         <button type="submit" disabled style={styles.btnLogin}>Please Wait</button>
                         </>
                     ) : (

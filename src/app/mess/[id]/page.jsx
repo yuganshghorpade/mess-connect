@@ -47,9 +47,9 @@ function Page() {
 
         // Fetch mess ratings
         const ratingsResponse = await axios.get(`/api/ratings/fetch-ratings?messId=${id}`);
-        console.log(ratingsResponse)
-        if (ratingsResponse.data.success) {
-          setRatings(ratingsResponse.data.messRatings[0]);
+        console.log('ratingsResponse', ratingsResponse)
+        if (ratingsResponse.status !== 404) {
+          setRatings(ratingsResponse.data.response[0]);
         } else {
           setError("Failed to load mess ratings.");
         }
@@ -115,7 +115,7 @@ function Page() {
       const pathname = window.location.pathname;
       const id = pathname.split('/').pop();
 
-      const response = await axios.post("/api/ratings/review-mess", {
+      const response = await axios.post(`/api/ratings/review-mess?messId=${id}`, {
         messId: id,
         ...reviewData,
       }, {

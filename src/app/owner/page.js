@@ -54,6 +54,8 @@ export default function Owner() {
                 const response = await axios.patch("/api/user/updating-user-details",{
                     longitude: position.coords.latitude,
                     latitude: position.coords.longitude,
+                },{
+                  withCredentials:true
                 })
                 console.log(response);
             };
