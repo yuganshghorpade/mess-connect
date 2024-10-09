@@ -41,26 +41,35 @@ export default function Register() {
 
 
   const submitUserDetails = async () => {
+    if (!username || !email || !password || !contactNo) {
+      setUserMessage("All fields are required.");
+      return;
+    }
+  
     try {
       const response = await axios.post('/api/auth/register-user', {
-        username:username,
-        email:email,
-        password:password,
-        contactNo:contactNo,
+        username,
+        email,
+        password,
+        contactNo,
       });
-
+  
       if (response.data.success) {
         setUserMessage('Registration successful! Please verify your account.');
         router.push("/login");
-         
       } else {
         setUserMessage(response.data.message);
       }
     } catch (error) {
-      console.error('Error submitting user details:', error);
-      setUserMessage('There was an error processing your request.');
+      if (error.response && error.response.data && error.response.data.message) {
+        setUserMessage(error.response.data.message);
+      } else {
+        console.error('Error submitting user details:', error);
+        setUserMessage('There was an error processing your request.');
+      }
     }
   };
+  
 
   // Function to handle mess registration
   const submitMessDetails = async () => {

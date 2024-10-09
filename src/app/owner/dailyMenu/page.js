@@ -1,6 +1,7 @@
 'use client'
 import Footer from "@/components/ui/footer"
 import Header from "@/app/owner/header/page"
+import SetDailyMenu from "../menuCreation/page"
 export default function DailyMenu(){
     return (
         <div>
@@ -8,7 +9,7 @@ export default function DailyMenu(){
   <Header />
   
   <main className="flex-grow">
-        Update your Daily menu
+        <SetDailyMenu/>
   </main>
 
   <Footer />

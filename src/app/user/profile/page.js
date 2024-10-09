@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Header from "../header/page";
 import Footer from "@/components/ui/footer";
 import axios from "axios";
-
+import Image from "next/image";
 // Import icons from one version (solid in this case)
 import { MapPinIcon, UserIcon } from '@heroicons/react/24/solid';
 
@@ -73,9 +73,15 @@ export default function Profile() {
                         {/* User Details Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-1 flex flex-col items-center text-center">
-                                <div className="w-28 h-28 bg-gray-200 rounded-full p-3">
-                                    <UserIcon className="w-full h-full text-gray-500" />
-                                </div>
+                            <div className="w-28 h-28 bg-gray-200 rounded-full p-3">
+    <Image 
+        src="/photo.png" // Path to your image
+        alt="User Image" 
+        className="w-full h-full object-cover rounded-full" 
+        width={140} // Matches w-28 (28 * 4px = 112px)
+        height={140} // Matches h-28 (28 * 4px = 112px)
+    />
+</div>
                                 <h2 className="text-2xl font-bold text-gray-900 mt-4">
                                     {userData.username}
                                 </h2>
@@ -94,10 +100,8 @@ export default function Profile() {
                                     <div>
                                         <p className="flex items-center text-gray-700">
                                             <MapPinIcon className="w-5 h-5 mr-2 text-green-600" />
-                                            <strong>Location:</strong>{" "}
-                                            {userData.location && userData.location.coordinates
-                                                ? `Lat: ${userData.location.coordinates[0]}, Long: ${userData.location.coordinates[1]}`
-                                                : "Location not available"}
+                                            <strong>Address:</strong>{" "}
+                                            {userData.address}
                                         </p>
                                     </div>
                                     {userData.type === "mess" && (
@@ -121,30 +125,48 @@ export default function Profile() {
 
                     {/* Subscriptions Section */}
                     <div className="mt-12">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6">Subscriptions</h2>
-                        {subscriptions.length > 0 ? (
-                            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {subscriptions.map((subscription) => (
-                                    <li key={subscription._id} className="bg-white p-6 rounded-lg shadow-md">
-                                        <p className="text-gray-900 font-semibold">
-                                            {subscription.mess ? subscription.mess.name : subscription.user.username}
-                                        </p>
-                                        <p className="text-gray-600 mt-2">
-                                            <strong>Start Date:</strong> {new Date(subscription.startDate).toLocaleDateString()}
-                                        </p>
-                                        <p className="text-gray-600">
-                                            <strong>End Date:</strong> {new Date(subscription.endDate).toLocaleDateString()}
-                                        </p>
-                                        <p className={`mt-2 font-semibold ${subscription.isActive ? "text-green-600" : "text-red-600"}`}>
-                                            {subscription.status ? "Active" : "Expired"}
-                                        </p>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500">No subscriptions found.</p>
-                        )}
-                    </div>
+    <h2 className="text-3xl font-extrabold text-gray-800 mb-8">
+        Subscriptions
+    </h2>
+    {subscriptions.length > 0 ? (
+        <ul className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {subscriptions.map((subscription) => (
+                <li
+                    key={subscription._id}
+                    className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 transition-transform transform hover:scale-105"
+                >
+                    <p className="text-gray-900 font-semibold text-xl mb-2">
+                        {subscription.mess
+                            ? subscription.mess.name
+                            : subscription.user.username}
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                        <strong>Start Date:</strong>{" "}
+                        {new Date(subscription.startDate).toLocaleDateString()}
+                    </p>
+                    <p className="text-gray-600 text-sm mt-1">
+                        <strong>End Date:</strong>{" "}
+                        {new Date(subscription.expiry).toLocaleDateString()}
+                    </p>
+                    <p
+                        className={`mt-4 font-semibold text-lg ${
+                            subscription.isActive
+                                ? "text-green-600"
+                                : "text-green-600"
+                        }`}
+                    >
+                        {subscription.status}
+                    </p>
+                </li>
+            ))}
+        </ul>
+    ) : (
+        <p className="text-gray-500 text-center text-lg">
+            No subscriptions found.
+        </p>
+    )}
+</div>
+
                 </div>
             </main>
             <Footer />

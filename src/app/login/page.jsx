@@ -53,6 +53,22 @@ export default function Login() {
                 <h2 style={styles.heading}>Login </h2>
                 <form onSubmit={handleSubmit}>
                     <div style={styles.formGroup}>
+                    <div style={styles.formGroup}>
+                        <label>Account Type</label>
+                        <select
+                            value={accountType}
+                            onChange={(e) => {
+                                setEmail("")
+                                setPassword("")
+                                setAccountType(e.target.value)
+                            }}
+                            required
+                            style={styles.input}
+                        >
+                            <option value="user">User</option>
+                            <option value="mess">Mess</option>
+                        </select>
+                    </div>
                         <label>Email</label>
                         <input 
                             type="email"
@@ -74,22 +90,7 @@ export default function Login() {
                             style={styles.input}
                         />
                     </div>
-                    <div style={styles.formGroup}>
-                        <label>Account Type</label>
-                        <select
-                            value={accountType}
-                            onChange={(e) => {
-                                setEmail("")
-                                setPassword("")
-                                setAccountType(e.target.value)
-                            }}
-                            required
-                            style={styles.input}
-                        >
-                            <option value="user">User</option>
-                            <option value="mess">Mess</option>
-                        </select>
-                    </div>
+                    
                     {isLoading ? (<>
                     <Loader2 />
                         <button type="submit" disabled style={styles.btnLogin}>Please Wait</button>

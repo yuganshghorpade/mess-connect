@@ -6,25 +6,67 @@ import { useRouter } from "next/navigation";
 import Header from "../header/page";
 import Footer from "@/components/ui/footer";
 import { MapPinIcon } from '@heroicons/react/24/solid';
- // or @heroicons/react/outline depending on the style
-
+// Removed the comment about outline as it's not necessary here
 
 export default function Profile() {
     const [userData, setUserData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [subscriptions, setSubscriptions] = useState([]); // Added state for subscriptions
+    const [loadingUser, setLoadingUser] = useState(true); // Separate loading state
+    const [loadingSubscriptions, setLoadingSubscriptions] = useState(true); // Separate loading state
+    const [errorUser, setErrorUser] = useState("");
+    const [errorSubscriptions, setErrorSubscriptions] = useState("");
     const router = useRouter();
+
+    const setMessLocation = async () => {
+        const fetchlocation = async()=>{
+              const handleSuccess = async (position) => {
+                setLocation({
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                });
+                const response = await axios.patch("/api/user/updating-user-details",{
+                    longitude: position.coords.latitude,
+                    latitude: position.coords.longitude,
+                })
+                console.log(response);
+            };
+          
+              const handleError = (error) => {
+                setError(error.message);
+              };
+          
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+                  enableHighAccuracy: true, // Request higher accuracy
+                  timeout: 5000, // Set a timeout (5 seconds in this case)
+                  maximumAge: 0 // Do not use a cached position
+                });
+              } else {
+                setError("Geolocation is not supported by this browser.");
+              }
+          }
+          fetchlocation()
+          
+        //   const response = await axios.patch("/api/user/updating-user-details",{
+        //     longitude: location.longitude,
+        //     latitude: location.latitude
+        //   })
+    }
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
+                // If using token-based auth, uncomment and implement getCookie
                 // const token = getCookie('accessToken');
 
-                // Make a request to the backend, including the token in the Authorization header
+                // Make a request to the backend, including the token in the Authorization header if needed
                 const response = await axios.get(
                     "/api/user/fetching-user-details",
                     {
                         withCredentials: true,
+                        // headers: {
+                        //     Authorization: `Bearer ${token}`,
+                        // },
                     }
                 );
                 console.log(response);
@@ -32,38 +74,49 @@ export default function Profile() {
                 if (response.data.success) {
                     setUserData(response.data.response);
                 } else {
-                    setError(
+                    setErrorUser(
                         response.data.message || "Failed to load user data."
                     );
                 }
             } catch (err) {
                 console.error("Error fetching user data:", err);
-                setError("Failed to load user data. Error: " + err.message);
+                setErrorUser("Failed to load user data. Error: " + err.message);
             } finally {
-                setLoading(false);
+                setLoadingUser(false);
             }
         };
 
-        const fetchSubscription = async () => {
-          try {
-            const response = await axios.get("/api/subscriptions/fetch-subscriptions",{
-              withCredentials:true
-            })
-            console.log(response);
-          } catch (error) {
-            console.error(error)
-          }
+        const fetchSubscriptions = async () => {
+            try {
+                const response = await axios.get("/api/subscriptions/fetch-subscriptions", {
+                    withCredentials: true
+                });
+                console.log(response);
+                if (response.data.success) {
+                    setSubscriptions(response.data.response);
+                } else {
+                    setErrorSubscriptions(
+                        response.data.message || "Failed to load subscriptions."
+                    );
+                }
+            } catch (error) {
+                console.error("Error fetching subscriptions:", error);
+                setErrorSubscriptions("Failed to load subscriptions. Error: " + error.message);
+            } finally {
+                setLoadingSubscriptions(false);
+            }
         };
-        fetchUserData();
-        fetchSubscription()
-    }, [router]);
 
-    if (loading) {
-        return <div>Loading...</div>;
+        fetchUserData();
+        fetchSubscriptions();
+    }, []); // Removed router from dependencies to fetch only once on mount
+
+    if (loadingUser || loadingSubscriptions) {
+        return <div className="flex justify-center items-center h-screen">Loading...</div>;
     }
 
-    if (error) {
-        return <div>{error}</div>;
+    if (errorUser) {
+        return <div className="text-red-500 text-center mt-4">{errorUser}</div>;
     }
 
     return (
@@ -75,7 +128,7 @@ export default function Profile() {
                         Profile Page
                     </h1>
                     {userData ? (
-                        <div className="bg-white shadow-lg rounded-lg p-8 sm:p-10 lg:p-12">
+                        <div className="bg-white shadow-lg rounded-lg p-8 sm:p-10 lg:p-12 mb-8">
                             <div className="flex items-center mb-6">
                                 {/* User Icon */}
                                 <div className="bg-gray-200 rounded-full p-2 mr-4">
@@ -94,6 +147,7 @@ export default function Profile() {
                                         />
                                     </svg>
                                 </div>
+                                
                                 {/* Username */}
                                 <h2 className="text-2xl font-semibold text-gray-900">
                                     {userData.username}
@@ -104,41 +158,31 @@ export default function Profile() {
                                     <strong>Email:</strong> {userData.email}
                                 </p>
                                 <p>
-                                    <strong>Contact:</strong>{" "}
-                                    {userData.contactNo}
+                                    <strong>Contact:</strong> {userData.contactNo}
                                 </p>
                                 <p>
-                                            <strong>Description:</strong>{" "}
-                                            {userData.description}
-                                        </p>
-                                        <p className="flex items-center">
-                                        <MapPinIcon className="w-5 h-5 mr-2 text-green-600" />
+                                    <strong>Description:</strong> {userData.description}
+                                </p>
+                                <p className="flex items-center">
+                                    <MapPinIcon className="w-5 h-5 mr-2 text-green-600" />
+                                    <strong>Address:</strong>{" "}
+                                    {userData.address}
+                                </p>
 
-                                            <strong>Location:</strong>{" "}
-                                            {userData.location &&
-                                            userData.location.coordinates
-                                                ? `Lat: ${userData.location.coordinates[0]}, Long: ${userData.location.coordinates[1]}`
-                                                : "Location not available"}
-                                        </p>
+                                <button className="bg-green-400 p-3 rounded-md text-black" onClick={setMessLocation}>Calibrate location</button>
                                 {userData.type === "mess" && (
                                     <>
                                         <p>
-                                            <strong>Mess Name:</strong>{" "}
-                                            {userData.messName}
+                                            <strong>Mess Name:</strong> {userData.messName}
                                         </p>
                                         <p>
-                                            <strong>Address:</strong>{" "}
-                                            {userData.address}
+                                            <strong>Address:</strong> {userData.address}
                                         </p>
-                                        <p>
-                                            <strong>Description:</strong>{" "}
-                                            {userData.description}
-                                        </p>
+                                        {/* Removed the redundant description */}
                                         <p className="flex items-center">
-                                            <MapPin className="w-5 h-5 mr-2 text-green-600" />
+                                            <MapPinIcon className="w-5 h-5 mr-2 text-green-600" />
                                             <strong>Location:</strong>{" "}
-                                            {userData.location &&
-                                            userData.location.coordinates
+                                            {userData.location && userData.location.coordinates
                                                 ? `Lat: ${userData.location.coordinates[0]}, Long: ${userData.location.coordinates[1]}`
                                                 : "Location not available"}
                                         </p>
@@ -147,10 +191,58 @@ export default function Profile() {
                             </div>
                         </div>
                     ) : (
-                        <p className="text-red-500 text-lg">
-                            No user data available
+                        <p className="text-gray-500 text-center text-lg">
+                            No user data available.
                         </p>
                     )}
+
+                    {/* Subscriptions Section */}
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                            Your Subscriptions
+                        </h2>
+                        {loadingSubscriptions ? (
+                            <div>Loading subscriptions...</div>
+                        ) : errorSubscriptions ? (
+                            <div className="text-red-500">{errorSubscriptions}</div>
+                        ) : subscriptions.length > 0 ? (
+                            <ul className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                                {subscriptions.map((subscription) => (
+                                    <li
+                                        key={subscription._id}
+                                        className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 transition-transform transform hover:scale-105"
+                                    >
+                                        <p className="text-gray-900 font-semibold text-xl mb-2">
+                                            {subscription.mess
+                                                ? subscription.user.username
+                                                : subscription.user.username}
+                                        </p>
+                                        <p className="text-gray-600 text-sm">
+                                            <strong>Start Date:</strong>{" "}
+                                            {new Date(subscription.startDate).toLocaleDateString()}
+                                        </p>
+                                        <p className="text-gray-600 text-sm mt-1">
+                                            <strong>End Date:</strong>{" "}
+                                            {new Date(subscription.expiry).toLocaleDateString()}
+                                        </p>
+                                        <p
+                                            className={`mt-4 font-semibold text-lg ${
+                                                subscription.isActive
+                                                    ? "text-green-600"
+                                                    : "text-green-600"
+                                            }`}
+                                        >
+                                            {subscription.status}
+                                        </p>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500 text-center text-lg">
+                                No subscriptions found.
+                            </p>
+                        )}
+                    </div>
                 </div>
             </main>
             <Footer />

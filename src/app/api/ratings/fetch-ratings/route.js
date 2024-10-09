@@ -13,7 +13,7 @@ export async function GET(request) {
         const messRatings = await Rating.aggregate([
             {
                 $match: {
-                    mess: mongoose.Types.ObjectId(messId), // Match ratings for the specific mess
+                    mess: new  mongoose.Types.ObjectId(messId), // Match ratings for the specific mess
                 },
             },
             {

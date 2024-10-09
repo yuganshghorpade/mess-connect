@@ -14,69 +14,44 @@ export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
 
-    const logoutUser = async()=>{
+    const logoutUser = async()=> {
         try {
-            const response = await axios.post("/api/auth/logout",{},{
-                withCredentials:true
-            })
-            router.replace("/login")
+            const response = await axios.post("/api/auth/logout", {}, { withCredentials: true });
+            router.replace("/login");
             console.log(response);
         } catch (error) {
-            console.error(error)
-        }
-    }
-
-    // useEffect(() => {
-    //     const fetchUserData = async () => {
-    //         try {
-    //             // Check if a token exists in cookies
-    //             const token = document.cookie.split('; ').find(row => row.startsWith('authToken='));
-    //             if (token) {
-    //                 console.log("Token found:", token);  // Check if token is fetched correctly
-    //                 const response = await axios.get("/api/user/fetching-user-details", {
-    //                     headers: {
-    //                         Authorization: `Bearer ${token.split('=')[1]}`  // Extract token value from cookie
-    //                     },
-    //                     withCredentials: true
-    //                 });
-
-    //                 if (response.data) {
-    //                     console.log("User data:", response.data.user);  // Check if user data is fetched
-    //                     setUserData(response.data.user);  // Assuming user data is in `response.data.user`
-    //                     setIsLoggedIn(true);
-    //                 }
-    //             } else {
-    //                 console.log("No token found");
-    //             }
-    //         } catch (error) {
-    //             console.error("Error fetching user data", error);
-    //             setIsLoggedIn(false);
-    //         }
-    //     };
-
-    //     fetchUserData();  // Check login state on component mount
-    // }, []);
-
-    const handleSearch = async (e) => {
-        e.preventDefault();
-        if (searchTerm) {
-            try {
-                const response = await axios.get("/data/localMess.json");
-                const data = response.data;
-
-                const matchingMess = data.find((mess) =>
-                    mess.name.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-
-                if (matchingMess) {
-                    router.push(`/mess/${matchingMess.id}`);
-                }
-            } catch (error) {
-                console.error("Error fetching data", error);
-            }
+            console.error(error);
         }
     };
 
+    const handleSearch = async (e) => {
+        e.preventDefault();
+    
+        if (searchTerm) { // Check if searchTerm is not empty
+            try {
+                // Send searchTerm to the backend
+                const response = await axios.post("/api/mess/fetching-messes-locations", { searchTerm });
+    
+                if (response.data.success) {
+                    const messes = response.data.messes;
+                    
+                    if (messes.length > 0) {
+                        // If messes found, redirect to the first found mess
+                        router.push(`/mess/${messes[0]._id}`);
+                    } else {
+                        alert("No mess found with the provided name.");
+                    }
+                } else {
+                    alert("Error: " + response.data.message);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        } else {
+            alert("Please enter a search term.");
+        }
+    };
+    
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
@@ -97,7 +72,7 @@ export default function Header() {
                                     placeholder="Search Mess"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="h-10 px-4 py-2 rounded-l-full border-none outline-none text-gray-700 w-full md:max-w-[300px] transition-all focus:ring-2 focus:ring-green-400 md:w-full lg:max-w-[400px] md:max-w-[200px]"
+                                    className="h-10 px-4 py-2 rounded-l-full border-none outline-none text-gray-700 w-full transition-all focus:ring-2 focus:ring-green-400"
                                 />
                             </div>
                             <Button type="submit" className="h-10 px-4 py-2 rounded-full bg-green-600 text-white">
@@ -126,7 +101,6 @@ export default function Header() {
                     </button>
                 </div>
 
-                {/* Conditionally render login buttons or user profile icon */}
                 <div className="hidden md:flex items-center space-x-6">
                     {isLoggedIn && userData ? (
                         <div className="flex items-center space-x-2">
@@ -135,27 +109,18 @@ export default function Header() {
                         </div>
                     ) : (
                         <>
-                            {/* <Link href="/login">
-                                <Button className="bg-white text-green-500 hover:bg-green-100 transition-all rounded-full px-4 py-2 shadow-md">
-                                    Login
-                                </Button>
+                            <Link href="/user">
+                                <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Home</span>
                             </Link>
-                            <Link href="/register">
-                                <Button className="bg-white text-green-500 hover:bg-green-100 transition-all rounded-full px-4 py-2 shadow-md">
-                                    Sign In
-                                </Button>
-                            </Link> */}
-                             <Link href="/user">
-                        <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Home</span>
-                    </Link>
-                    <Link href="/deals">
-                        <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Deals</span>
-                    </Link>
-                    <Link href="/user/profile">
-                        <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Profile</span>
-                    </Link>
-                    <Button onClick={logoutUser} className="bg-white text-gray-800 hover:bg-white-300 rounded-xl px-4 py-2">Logout</Button>
-
+                            <Link href="/user/menu">
+                                <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Menu</span>
+                            </Link>
+                            <Link href="/user/profile">
+                                <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Profile</span>
+                            </Link>
+                            <Button onClick={logoutUser} className="bg-white text-gray-800 hover:bg-white-300 rounded-xl px-4 py-2">
+                                Logout
+                            </Button>
                         </>
                     )}
                 </div>
@@ -166,13 +131,15 @@ export default function Header() {
                     <Link href="/user">
                         <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Home</span>
                     </Link>
-                    <Link href="/user/deals">
-                        <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Deals</span>
+                    <Link href="/user/menu">
+                        <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Menu</span>
                     </Link>
                     <Link href="/user/profile">
                         <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Profile</span>
                     </Link>
-                  
+                    <Button onClick={logoutUser} className="bg-white text-gray-800 hover:bg-white-300 rounded-xl px-4 py-2">
+                                Logout
+                            </Button>
                 </div>
             )}
         </div>

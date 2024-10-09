@@ -4,44 +4,36 @@ import axios from 'axios';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Next.js router for navigation
 
 export default function Content() {
   const [localMess, setLocalMess] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(null); // Store the ID of the clicked mess
+  const router = useRouter(); // Next.js router hook
   
-
   useEffect(() => {
-    
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
-
         try {
-        //   // Fetch local mess daily menu data from backend using Axios
-        //   const response = await axios.get(`/api/mess/fetch-nearby-messes?latitude=${latitude}&longitude=${longitude}`,{
-        //     withCredentials:true
-        // });
-            const response = await axios.post(`/api/mess/fetch-nearby-messes`,{
-              latitude: position.coords.latitude ,
-              longitude : position.coords.longitude
-            },{
-              withCredentials:true
-            })
-            console.log(response);
+          const response = await axios.post(`/api/mess/fetch-nearby-messes`, {
+            latitude,
+            longitude
+          }, {
+            withCredentials: true
+          });
           if (response.data.success) {
             setLocalMess(response.data.messes);
           } else {
             setError(response.data.message);
           }
-
         } catch (err) {
           setError("Error fetching daily menu: " + err.message);
         } finally {
           setLoading(false);
         }
-
       }, (error) => {
         setError("Unable to retrieve location: " + error.message);
         setLoading(false);
@@ -52,25 +44,30 @@ export default function Content() {
     }
   }, []);
 
+  const handleViewDetails = (id) => {
+    setLoadingDetails(id); // Set loading for the specific mess
+    router.push(`/mess/${id}`); // Navigate to the details page
+  };
+
   return (
-    <div className="container py-8">
+    <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div>
-        <h2 className="text-center text-3xl font-semibold text-gray-800 mb-4">
+        <h2 className="text-center text-4xl font-bold text-gray-900 mb-8">
           Local Messes Near You
         </h2>
         
         {loading ? (
-          <p>Loading local messes...</p>
+          <p className="text-center text-gray-600">Loading local messes...</p>
         ) : error ? (
-          <p className="text-red-500">{error}</p>
+          <p className="text-center text-red-600">{error}</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mx-4 my-5">
-            {localMess ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {localMess && localMess.length > 0 ? (
               localMess.map((menu, index) => (
-                <Card key={index} className="shadow-lg rounded-lg overflow-hidden">
+                <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden bg-white">
                   <div className="relative w-full h-48">
                     <Image
-                      src="/assets/mess.jpeg"
+                      src="/food2.jpeg"
                       alt="mess image"
                       fill
                       className="object-cover"
@@ -78,39 +75,38 @@ export default function Content() {
                   </div>
 
                   {/* Mess Details */}
-                  <CardContent className="p-4">
-                    <h3 className="text-lg font-semibold">{menu.name}</h3>
+                  <CardContent className="p-6">
+                    <h3 className="text-2xl font-semibold text-gray-800">{menu.name}</h3>
                     <p className="text-gray-600 mt-2">{menu.address}</p>
 
                     {/* Daily Menu */}
-                    <div className="mt-4">
-                      <h4 className="text-md font-semibold">Today's Menu:</h4>
-                      <ul className="list-disc list-inside text-gray-700 mt-2">
-                        {/* {menu.menuItems && Array.isArray(menu.menuItems) && menu.menuItems.length > 0 ? (
+                    <div className="mt-6">
+                      <h4 className="text-lg font-semibold text-gray-700">Today's Menu:</h4>
+                      <ul className="list-disc list-inside text-gray-700 mt-3">
+                        {menu.menuItems && Array.isArray(menu.menuItems) && menu.menuItems.length > 0 ? (
                           menu.menuItems.map((item, idx) => (
                             <li key={idx}>{item}</li>
                           ))
                         ) : (
                           <li>No menu available</li>
-                        )} */}
+                        )}
                       </ul>
                     </div>
                   </CardContent>
+                  
                   <CardFooter className="flex justify-between items-center p-4 bg-gray-100">
-                    {/* <span className="text-gray-600 text-sm">{menu.location}</span> */}
-
-                    <Link href={`/mess/${menu._id}`}>
-                      <Button className="bg-blue-500 text-white">View Details</Button>
-                    </Link>
+                    <Button 
+                      onClick={() => handleViewDetails(menu._id)} 
+                      className="bg-green-600 hover:bg-green-400 text-white py-2 px-4 rounded-lg"
+                      disabled={loadingDetails === menu._id} // Disable only the clicked button
+                    >
+                      {loadingDetails === menu._id ? "Loading..." : "View Details"}
+                    </Button>
                   </CardFooter>
                 </Card>
               ))
             ) : (
-              
-              <>
-              <p>No nearby messes found.</p>
-              <p>{}</p>
-              </>
+              <p className="text-center text-gray-600">No nearby messes found.</p>
             )}
           </div>
         )}
