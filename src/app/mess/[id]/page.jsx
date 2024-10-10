@@ -17,10 +17,9 @@ function Page() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [mealType, setMealType] = useState("");
+  const [mealType, setMealType] = useState(""); 
   const [duration, setDuration] = useState("");
-  const [ratings, setRatings] = useState(null);
-  const [reviewLoading, setReviewLoading] = useState(false);
+  const [ratings, setRatings] = useState(null); 
   const [reviewData, setReviewData] = useState({
     cleanliness: 0,
     foodQuality: 0,
@@ -31,27 +30,13 @@ function Page() {
   });
   const { toast } = useToast();
 
-  // Helper function to map duration to milliseconds
-  const getDurationInMilliseconds = (duration) => {
-    switch (duration.toLowerCase()) {
-      case "monthly":
-        return 2592000000; // 30 days
-      case "quarterly":
-        return 7776000000; // 90 days
-      case "yearly":
-        return 31536000000; // 365 days
-      default:
-        return 0;
-    }
-  };
-
   // Fetch user data and mess ratings
   useEffect(() => {
     const fetchData = async () => {
       try {
         const pathname = window.location.pathname;
         const id = pathname.split("/").pop();
-
+  
         // Fetch user data
         const userResponse = await axios.get(`/api/user/fetching-user-details?messid=${id}`, {
           withCredentials: true,
@@ -61,32 +46,36 @@ function Page() {
         } else {
           setError(userResponse.data.message || "Failed to load user data.");
         }
-
+      
         // Fetch mess ratings
         const ratingsResponse = await axios.get(`/api/ratings/fetch-ratings?messId=${id}`);
         if (ratingsResponse.data.success) {
           setRatings(ratingsResponse.data.messRatings[0]);
+        }
+        console.log('ratingsResponse', ratingsResponse)
+        if (ratingsResponse.status !== 404) {
+          setRatings(ratingsResponse.data.response[0]);
         } else {
           setError("Failed to load mess ratings.");
         }
+          
       } catch (err) {
         setError("Failed to load data. Error: " + err.message);
       } finally {
         setLoading(false);
       }
     };
-
+    
     fetchData();
   }, []);
+  
 
   const createSubscription = async (e) => {
     e.preventDefault();
-
-    // Basic validation
     if (!mealType || !duration) {
       toast({
-        title: "Incomplete Information",
-        description: "Please select both meal type and duration.",
+        title: "Missing Fields",
+        description: "Please select both meal type and subscription duration.",
         variant: "destructive",
       });
       return;
@@ -94,52 +83,38 @@ function Page() {
 
     try {
       const pathname = window.location.pathname;
-      const id = pathname.split("/").pop();
-      console.log("Subscription ID:", id);
+      const id = pathname.split('/').pop();
 
-      const durationInMilliseconds = getDurationInMilliseconds(duration);
-      if (durationInMilliseconds === 0) {
-        throw new Error("Invalid duration selected.");
-      }
-
-      const response = await axios.post(
-        "/api/subscriptions/create-subscription",
-        {
-          messId: id,
-          mealType: mealType,
-          durationInMilliseconds: durationInMilliseconds,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post("/api/subscriptions/create-subscription", {
+        messId: id,
+        mealType,
+        durationInMilliseconds: duration === "Monthly" ? 2592000000 : duration === "Quarterly" ? 7776000000 : 31536000000
+      }, {
+        withCredentials: true
+      });
 
       if (response.data.success) {
         toast({
           title: "Subscription Successful",
-          description: "You have successfully subscribed to the meal plan.",
+          description: "You have successfully subscribed!",
         });
-        // Optionally, reset the form
-        setMealType("");
-        setDuration("");
       } else if (response.data.message === "Already subscribed") {
         toast({
           title: "Already Subscribed",
           description: "You are already subscribed to this meal plan.",
-          variant: "warning",
         });
       } else {
         throw new Error(response.data.message || "Failed to subscribe.");
       }
+
     } catch (error) {
       toast({
         title: "Subscription Failed",
-        description: error.message || "An error occurred during subscription.",
+        description: error.message || "An error occurred.",
         variant: "destructive",
       });
-      console.error(error);
     }
-  };
+  }
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -159,15 +134,6 @@ function Page() {
           title: "Review Submitted",
           description: "Thank you for your feedback!",
         });
-        // Optionally, reset the review form
-        setReviewData({
-          cleanliness: 0,
-          foodQuality: 0,
-          ownerBehaviour: 0,
-          deliveryPunctuality: 0,
-          variety: 0,
-          review: ""
-        });
       } else {
         throw new Error(response.data.message || "Failed to submit review.");
       }
@@ -180,11 +146,6 @@ function Page() {
       });
     }
   };
-
-  const handleStarClick = (key, value) => {
-    setReviewData({ ...reviewData, [key]: value });
-  };
-
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}

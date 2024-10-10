@@ -75,11 +75,11 @@ export default function Content() {
                   </div>
 
                   {/* Mess Details */}
-                  <CardContent className="p-6">
+                  <CardContent className="p-6 mb-5">
                     <h3 className="text-2xl font-semibold text-gray-800">{menu.name}</h3>
                     <p className="text-gray-600 mt-2">{menu.address}</p>
 
-                    {/* Daily Menu */}
+                    {/* Daily Menu
                     <div className="mt-6">
                       <h4 className="text-lg font-semibold text-gray-700">Today's Menu:</h4>
                       <ul className="list-disc list-inside text-gray-700 mt-3">
@@ -91,7 +91,7 @@ export default function Content() {
                           <li>No menu available</li>
                         )}
                       </ul>
-                    </div>
+                    </div> */}
                   </CardContent>
                   
                   <CardFooter className="flex justify-between items-center p-4 bg-gray-100">

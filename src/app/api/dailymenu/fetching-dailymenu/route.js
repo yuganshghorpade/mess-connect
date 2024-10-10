@@ -51,7 +51,7 @@ export async function GET(request) {
         return NextResponse.json({
             success: true,
             message: "Daily Menu fetched successfully",
-            response: dailyMenus,
+            dailyMenus: dailyMenus,  // Ensure "dailyMenus" key is used for frontend
         }, { status: 200 });
 
     } catch (error) {
@@ -62,3 +62,4 @@ export async function GET(request) {
         }, { status: 500 });
     }
 }
+

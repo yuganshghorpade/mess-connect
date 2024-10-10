@@ -93,7 +93,7 @@ const Footer = () => {
                     }
                 </div>
                 <div className="mt-10 py-10 border-t border-gray-700 items-center justify-between sm:flex">
-                    <p className="text-gray-400">© 2022 Float UI Inc. All rights reserved.</p>
+                    <p className="text-gray-400">© 2024 Float UI Inc. All rights reserved. @atharva_mandave & @yugansh_ghorpade</p>
                     <div className="flex items-center gap-x-6 text-gray-400 mt-6">
                         <a href="javascript:void(0)">
                             <svg className="w-6 h-6 hover:text-gray-200 duration-150" fill="none" viewBox="0 0 48 48">
