@@ -86,7 +86,7 @@ export default function Register() {
 
       if (response.data.success) {
         setMessMessage('Mess registration successful!Redirecting to login page.');
-        router.push('/owner')
+        router.push('/login')
       } else {
         setMessMessage(response.data.message);
       }

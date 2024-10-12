@@ -49,55 +49,62 @@ const SetDailyMenu = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-green-100 via-white to-green-100">
-      <Card className="w-full max-w-md bg-white shadow-lg rounded-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-gray-700">Set Daily Menu</CardTitle>
-        </CardHeader>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-green-200 via-white to-green-200">
+  <Card className="w-full max-w-lg bg-white shadow-xl rounded-2xl transform transition-all hover:shadow-2xl">
+    <CardHeader className="text-center py-6">
+      <CardTitle className="text-4xl font-extrabold text-gray-800">Set Daily Menu</CardTitle>
+    </CardHeader>
 
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-6">
-              <label htmlFor="menu" className="block text-sm font-medium text-gray-700 mb-2">Today's Menu:</label>
-              <Input
-                type="text"
-                id="menu"
-                value={menu}
-                onChange={handleMenuChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="e.g. Panner, Salad"
-                required
-              />
-            </div>
+    <CardContent className="px-8 py-6">
+      <form onSubmit={handleSubmit}>
+        <div className="mb-8">
+          <label htmlFor="menu" className="block text-base font-semibold text-gray-700 mb-3">
+            Today's Menu:
+          </label>
+          <Input
+            type="text"
+            id="menu"
+            value={menu}
+            onChange={handleMenuChange}
+            className="w-full h-16 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 text-lg"
+            placeholder="e.g. Paneer, Salad"
+            required
+          />
+        </div>
 
-            <Button 
-              type="submit" 
-              className="w-full py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-2"
-              disabled={loading}  // Disable button while loading
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
-              <span>{loading ? 'Setting Menu...' : 'Set Menu'}</span>
-            </Button>
-          </form>
-        </CardContent>
-
-        <CardFooter>
-          {errorMessage && (
-            <div className="mt-4 flex items-center text-red-600">
-              <AlertCircle className="w-5 h-5 mr-2" />
-              <p>{errorMessage}</p>
-            </div>
+        <Button
+          type="submit"
+          className="w-full py-4 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center space-x-3"
+          disabled={loading} 
+        >
+          {loading ? (
+            <Loader2 className="w-6 h-6 animate-spin" />
+          ) : (
+            <CheckCircle className="w-6 h-6" />
           )}
+          <span>{loading ? 'Setting Menu...' : 'Set Menu'}</span>
+        </Button>
+      </form>
+    </CardContent>
 
-          {successMessage && (
-            <div className="mt-4 flex items-center text-green-600">
-              <CheckCircle className="w-5 h-5 mr-2" />
-              <p>{successMessage}</p>
-            </div>
-          )}
-        </CardFooter>
-      </Card>
-    </div>
+    <CardFooter className="px-8 py-6">
+      {errorMessage && (
+        <div className="mt-4 flex items-center text-red-600">
+          <AlertCircle className="w-6 h-6 mr-2" />
+          <p className="text-lg">{errorMessage}</p>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="mt-4 flex items-center text-green-600">
+          <CheckCircle className="w-6 h-6 mr-2" />
+          <p className="text-lg">{successMessage}</p>
+        </div>
+      )}
+    </CardFooter>
+  </Card>
+</div>
+
   );
 };
 

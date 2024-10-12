@@ -45,8 +45,8 @@ export default function Owner() {
     }, []);
 
     const setMessLocation = async () => {
-        const fetchlocation = async()=>{
-              const handleSuccess = async (position) => {
+        const fetchlocation = async()=> {
+            const handleSuccess = async (position) => {
                 setLocation({
                   latitude: position.coords.latitude,
                   longitude: position.coords.longitude,
@@ -59,96 +59,85 @@ export default function Owner() {
                 })
                 console.log(response);
             };
-          
-              const handleError = (error) => {
+
+            const handleError = (error) => {
                 setError(error.message);
-              };
-          
-              if (navigator.geolocation) {
+            };
+
+            if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
                   enableHighAccuracy: true, // Request higher accuracy
                   timeout: 5000, // Set a timeout (5 seconds in this case)
                   maximumAge: 0 // Do not use a cached position
                 });
-              } else {
+            } else {
                 setError("Geolocation is not supported by this browser.");
-              }
-          }
-          fetchlocation()
-          
-        //   const response = await axios.patch("/api/user/updating-user-details",{
-        //     longitude: location.longitude,
-        //     latitude: location.latitude
-        //   })
+            }
+        }
+        fetchlocation();
     }
 
-    return<div className="flex flex-col min-h-screen bg-gray-50">
-    {/* Header Component */}
-    <Header />
+    return (
+        <div className="flex flex-col min-h-screen bg-gray-900 text-gray-200">
+            {/* Header Component */}
+            <Header />
 
-    {/* Main Content */}
-    <main className="flex-grow">
-        <section className="bg-white py-16">
-            <div className="container mx-auto px-4 text-center">
-                <h1 className="text-4xl font-bold text-gray-800 mb-4">Welcome to Tastebuddies</h1>
-                <p className="text-lg text-gray-600 mb-8">
-                    You can update your daily menu on our website allows more customers to know about your mess.
-                </p>
-                <div className="flex justify-center">
-                    {/* <button className="bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition">
-                        Explore Messes
-                    </button> */}
-                </div>
-            </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="bg-blue-50 py-16">
-            <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                    {/* Feature 1 */}
-                    <div className="bg-white p-8 rounded-md shadow-lg">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Daily Menu Updates</h3>
-                        <p className="text-gray-600 mb-6">
-                            Mess owners can easily update their daily menus, offering fresh meal options for users.
+            {/* Main Content */}
+            <main className="flex-grow">
+                <section className="bg-gray-800 py-16">
+                    <div className="container mx-auto px-4 text-center">
+                        <h1 className="text-5xl font-extrabold text-white mb-6">
+                            Welcome to Tastebuddies
+                        </h1>
+                        <p className="text-xl text-gray-400 mb-12">
+                            You can update your daily menu on our website, making it easier for more customers to discover your mess.
                         </p>
-                        {/* <img src="/images/menu-update.png" alt="Menu Update" className="w-full h-48 object-cover rounded-md" /> */}
                     </div>
+                </section>
 
-                    {/* Feature 2 */}
-                    <div className="bg-white p-8 rounded-md shadow-lg">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Custom Meal Plans</h3>
-                        <p className="text-gray-600 mb-6">
-                            Users can subscribe to a variety of meal plans tailored to their dietary preferences.
-                        </p>
-                        {/* <img src="/images/meal-plan.png" alt="Meal Plan" className="w-full h-48 object-cover rounded-md" /> */}
+                {/* Features Section */}
+                <section className="bg-white py-20">
+                    <div className="container mx-auto px-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                            {/* Feature 1 */}
+                            <div className="bg-gray-800 p-10 rounded-lg shadow-lg transform hover:scale-105 transition-transform">
+                                <h3 className="text-3xl font-bold text-white mb-4">
+                                    Daily Menu Updates
+                                </h3>
+                                <p className="text-gray-400 mb-6">
+                                    Mess owners can easily update their daily menus, offering fresh meal options for users.
+                                </p>
+                              
+                            </div>
+
+                            {/* Feature 2 */}
+                            <div className="bg-gray-800 p-10 rounded-lg shadow-lg transform hover:scale-105 transition-transform">
+                                <h3 className="text-3xl font-bold text-white mb-4">
+                                    Custom Meal Plans
+                                </h3>
+                                <p className="text-gray-400 mb-6">
+                                    Users can subscribe to a variety of meal plans tailored to their dietary preferences.
+                                </p>
+                                
+                            </div>
+
+                            {/* Feature 3 */}
+                            <div className="bg-gray-800 p-10 rounded-lg shadow-lg transform hover:scale-105 transition-transform">
+                                <h3 className="text-3xl font-bold text-white mb-4">
+                                    Mess Subscription
+                                </h3>
+                                <p className="text-gray-400 mb-6">
+                                    Convenient subscription options allow users to select messes based on their location and meals.
+                                </p>
+                               
+                            </div>
+                        </div>
                     </div>
+                </section>
+            </main>
 
-                    {/* Feature 3 */}
-                    <div className="bg-white p-8 rounded-md shadow-lg">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Mess Subscription</h3>
-                        <p className="text-gray-600 mb-6">
-                            Convenient subscription options allow users to select messes based on their location and meals.
-                        </p>
-                        {/* <img src="/images/subscription.png" alt="Mess Subscription" className="w-full h-48 object-cover rounded-md" /> */}
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {/* Call to Action */}
-        {/* <section className="bg-blue-600 py-12 text-center text-white">
-            <h2 className="text-3xl font-bold mb-4">Join Mess Connection Today!</h2>
-            <p className="text-lg mb-6">Start subscribing to your favorite mess and enjoy delicious meals every day.</p>
-            <button className="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-gray-200 transition">
-                Get Started
-            </button>
-        </section> */}
-    </main>
-
-    {/* Footer Component */}
-    <Footer />
-</div>
-
-  
+            {/* Footer Component */}
+            <Footer />
+        </div>
+    );
 }

@@ -23,7 +23,7 @@ export default function Login() {
         try {
             const response = await axios.post(`/api/auth/login?acctype=${accountType}`, { 
                 email,
-                password
+                password    
             },{
                 withCredentials: true
             });
@@ -36,7 +36,7 @@ export default function Login() {
                     } else if (accountType === 'mess') {
                         router.push('/owner'); 
                     }
-                }, 1500);  // Optional: Delay redirection to show success message
+                }, 1500);  
             } else {
                 setErrorMessage(response.data.message);
             }

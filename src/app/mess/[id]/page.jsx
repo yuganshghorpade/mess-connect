@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
@@ -11,7 +11,6 @@ import Footer from "@/components/ui/footer";
 import Image from "next/image";
 import { FaUtensils, FaClock } from "react-icons/fa"; // FontAwesome icons
 import { Button } from "@/components/ui/button";
-
 
 function Page() {
   const [userData, setUserData] = useState(null);
@@ -28,7 +27,17 @@ function Page() {
     variety: 0,
     review: ""
   });
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false); // Added subscription loading state
   const { toast } = useToast();
+
+  // Handle star rating clicks
+  const handleStarClick = (key, value) => {
+    setReviewData((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
   // Fetch user data and mess ratings
   useEffect(() => {
@@ -36,9 +45,9 @@ function Page() {
       try {
         const pathname = window.location.pathname;
         const id = pathname.split("/").pop();
-  
+
         // Fetch user data
-        const userResponse = await axios.get(`/api/user/fetching-user-details?messid=${id}`, {
+        const userResponse = await axios.get(`/api/user/fetching-user-details?messid=${id}`, { // Added backticks
           withCredentials: true,
         });
         if (userResponse.data.success) {
@@ -48,15 +57,16 @@ function Page() {
         }
       
         // Fetch mess ratings
-        const ratingsResponse = await axios.get(`/api/ratings/fetch-ratings?messId=${id}`);
+        const ratingsResponse = await axios.get(`/api/ratings/fetch-ratings?messId=${id}`); // Added backticks
         if (ratingsResponse.data.success) {
-          setRatings(ratingsResponse.data.messRatings[0]);
-        }
-        console.log('ratingsResponse', ratingsResponse)
-        if (ratingsResponse.status !== 404) {
-          setRatings(ratingsResponse.data.response[0]);
+          const ratingsData = ratingsResponse.data.messRatings || ratingsResponse.data.response;
+          if (Array.isArray(ratingsData) && ratingsData.length > 0) {
+            setRatings(ratingsData[0]);
+          } else {
+            setError("No ratings available for this mess.");
+          }
         } else {
-          setError("Failed to load mess ratings.");
+          setError(ratingsResponse.data.message || "Failed to load mess ratings.");
         }
           
       } catch (err) {
@@ -68,7 +78,6 @@ function Page() {
     
     fetchData();
   }, []);
-  
 
   const createSubscription = async (e) => {
     e.preventDefault();
@@ -80,6 +89,8 @@ function Page() {
       });
       return;
     }
+
+    setSubscriptionLoading(true); // Start loading
 
     try {
       const pathname = window.location.pathname;
@@ -113,16 +124,19 @@ function Page() {
         description: error.message || "An error occurred.",
         variant: "destructive",
       });
+    } finally {
+      setSubscriptionLoading(false); // End loading
     }
   }
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+    setReviewLoading(true);
     try {
       const pathname = window.location.pathname;
       const id = pathname.split('/').pop();
 
-      const response = await axios.post(`/api/ratings/review-mess?messId=${id}`, {
+      const response = await axios.post(`/api/ratings/review-mess?messId=${id}`, { // Added backticks
         messId: id,
         ...reviewData,
       }, {
@@ -134,6 +148,15 @@ function Page() {
           title: "Review Submitted",
           description: "Thank you for your feedback!",
         });
+        // Optionally reset the form
+        setReviewData({
+          cleanliness: 0,
+          foodQuality: 0,
+          ownerBehaviour: 0,
+          deliveryPunctuality: 0,
+          variety: 0,
+          review: ""
+        });
       } else {
         throw new Error(response.data.message || "Failed to submit review.");
       }
@@ -144,8 +167,11 @@ function Page() {
         description: error.message || "An error occurred.",
         variant: "destructive",
       });
+    } finally {
+      setReviewLoading(false);
     }
   };
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
@@ -220,62 +246,68 @@ function Page() {
 
                   {/* Subscription */}
                   <form
-  onSubmit={createSubscription}
-  className="mt-10 flex flex-col items-center bg-gradient-to-br from-white to-green-50 p-8 rounded-xl shadow-lg mb-8 border border-gray-200 transition-shadow duration-300 ease-in-out"
->
-  <h2 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-wide">
-    Subscribe to Meal Plan
-  </h2>
-  <div className="flex flex-col md:flex-row w-full space-y-6 md:space-y-0 md:space-x-8">
-    <div className="w-full md:w-1/2">
-      <label
-        htmlFor="mealType"
-        className="block text-sm font-bold text-gray-700 tracking-wide"
-      >
-        <FaUtensils className="inline-block mr-2" /> Meal Type
-      </label>
-      <select
-        id="mealType"
-        className="mt-3 block w-full rounded-lg border border-gray-300 bg-white focus:border-green-500 focus:ring-2 focus:ring-green-200 shadow-sm transition-all duration-300 ease-in-out"
-        value={mealType}
-        onChange={(e) => setMealType(e.target.value)}
-        required
-      >
-        <option value="">Select Meal Type</option>
-        <option value="Lunch">Lunch</option>
-        <option value="Dinner">Dinner</option>
-      </select>
-    </div>
-    <div className="w-full md:w-1/2">
-      <label
-        htmlFor="duration"
-        className="block text-sm font-bold text-gray-700 tracking-wide"
-      >
-        <FaClock className="inline-block mr-2" /> Duration
-      </label>
-      <select
-        id="duration"
-        className="mt-3 block w-full rounded-lg border border-gray-300 bg-white focus:border-green-500 focus:ring-2 focus:ring-green-200 shadow-sm transition-all duration-300 ease-in-out"
-        value={duration}
-        onChange={(e) => setDuration(e.target.value)}
-        required
-      >
-        <option value="">Select Duration</option>
-        <option value="Monthly">Monthly</option>
-        <option value="Quarterly">Quarterly</option>
-        <option value="Yearly">Yearly</option>
-      </select>
-    </div>
-  </div>
+                    onSubmit={createSubscription}
+                    className="mt-10 flex flex-col items-center bg-gradient-to-br from-white to-green-50 p-8 rounded-xl shadow-lg mb-8 border border-gray-200 transition-shadow duration-300 ease-in-out"
+                  >
+                    <h2 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-wide">
+                      Subscribe to Meal Plan
+                    </h2>
+                    <div className="flex flex-col md:flex-row w-full space-y-6 md:space-y-0 md:space-x-8">
+                      <div className="w-full md:w-1/2">
+                        <label
+                          htmlFor="mealType"
+                          className="block text-sm font-bold text-gray-700 tracking-wide"
+                        >
+                          <FaUtensils className="inline-block mr-2" /> Meal Type
+                        </label>
+                        <select
+                          id="mealType"
+                          className="mt-3 block w-full rounded-lg border border-gray-300 bg-white focus:border-green-500 focus:ring-2 focus:ring-green-200 shadow-sm transition-all duration-300 ease-in-out"
+                          value={mealType}
+                          onChange={(e) => setMealType(e.target.value)}
+                          required
+                        >
+                          <option value="">Select Meal Type</option>
+                          <option value="Lunch">Lunch</option>
+                          <option value="Dinner">Dinner</option>
+                        </select>
+                      </div>
+                      <div className="w-full md:w-1/2">
+                        <label
+                          htmlFor="duration"
+                          className="block text-sm font-bold text-gray-700 tracking-wide"
+                        >
+                          <FaClock className="inline-block mr-2" /> Duration
+                        </label>
+                        <select
+                          id="duration"
+                          className="mt-3 block w-full rounded-lg border border-gray-300 bg-white focus:border-green-500 focus:ring-2 focus:ring-green-200 shadow-sm transition-all duration-300 ease-in-out"
+                          value={duration}
+                          onChange={(e) => setDuration(e.target.value)}
+                          required
+                        >
+                          <option value="">Select Duration</option>
+                          <option value="Monthly">Monthly</option>
+                          <option value="Quarterly">Quarterly</option>
+                          <option value="Yearly">Yearly</option>
+                        </select>
+                      </div>
+                    </div>
 
-  {/* Using Shadcn Button component */}
-  <Button
-    type="submit"
-    className="mt-10 w-full md:w-auto px-6 py-3 text-lg font-semibold"
-  >
-    <FaUtensils className="mr-2" /> Subscribe
-  </Button>
-</form>
+                    {/* Subscribe Button with Loading Indicator */}
+                    <Button
+                      type="submit"
+                      className="mt-10 w-full md:w-auto px-6 py-3 text-lg font-semibold flex items-center justify-center"
+                      disabled={subscriptionLoading}
+                    >
+                      {subscriptionLoading ? (
+                        <Loader2 className="animate-spin w-5 h-5 mr-2" />
+                      ) : (
+                        <FaUtensils className="mr-2" />
+                      )}
+                      {subscriptionLoading ? "Subscribing..." : "Subscribe"}
+                    </Button>
+                  </form>
 
                 </div>
 
@@ -303,10 +335,11 @@ function Page() {
                               <Star
                                 key={value}
                                 onClick={() => handleStarClick(key, value)}
-                                className={`w-6 h-6 cursor-pointer ${reviewData[key] >= value
+                                className={`w-6 h-6 cursor-pointer ${
+                                  reviewData[key] >= value
                                     ? "text-yellow-500"
                                     : "text-gray-400"
-                                  }`}
+                                }`}
                               />
                             ))}
                           </div>
@@ -316,14 +349,14 @@ function Page() {
                     <div className="mt-6">
                       <label
                         htmlFor="review"
-                        className="block text-sm font-medium text-gray-700"
+                        className="block text-sm font-medium text-black"
                       >
                         Review
                       </label>
                       <textarea
                         id="review"
                         rows="3"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"
+                        className="mt-1 block w-full rounded-md border-gray-900 shadow-sm p-2"
                         value={reviewData.review}
                         onChange={(e) =>
                           setReviewData({ ...reviewData, review: e.target.value })
@@ -331,9 +364,18 @@ function Page() {
                         required
                       />
                     </div>
-                    <Button type="submit" disabled={reviewLoading}>
-                {reviewLoading ? <Loader2 className="animate-spin w-5 h-5" /> : "Submit Review"}
-              </Button>
+                    <Button
+                      type="submit"
+                      disabled={reviewLoading}
+                      className="mt-4 flex items-center justify-center"
+                    >
+                      {reviewLoading ? (
+                        <Loader2 className="animate-spin w-5 h-5 mr-2" />
+                      ) : (
+                        ""
+                      )}
+                      {reviewLoading ? "Submitting..." : "Submit Review"}
+                    </Button>
                   </form>
 
                   {/* Ratings */}
@@ -372,7 +414,7 @@ function Page() {
                       </CardContent>
                     </Card>
                   ) : (
-                    <p>No ratings available</p>
+                    <p className="mt-4">No ratings available</p>
                   )}
 
                 </div>

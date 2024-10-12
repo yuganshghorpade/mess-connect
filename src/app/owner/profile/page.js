@@ -6,77 +6,67 @@ import { useRouter } from "next/navigation";
 import Header from "../header/page";
 import Footer from "@/components/ui/footer";
 import { MapPinIcon } from '@heroicons/react/24/solid';
-// Removed the comment about outline as it's not necessary here
 
 export default function Profile() {
     const [userData, setUserData] = useState(null);
-    const [subscriptions, setSubscriptions] = useState([]); // Added state for subscriptions
-    const [loadingUser, setLoadingUser] = useState(true); // Separate loading state
-    const [loadingSubscriptions, setLoadingSubscriptions] = useState(true); // Separate loading state
+    const [subscriptions, setSubscriptions] = useState([]);
+    const [loadingUser, setLoadingUser] = useState(true);
+    const [loadingSubscriptions, setLoadingSubscriptions] = useState(true);
     const [errorUser, setErrorUser] = useState("");
     const [errorSubscriptions, setErrorSubscriptions] = useState("");
+    const [location, setLocation] = useState(null); // Added
+    const [locationError, setLocationError] = useState(""); // Added
     const router = useRouter();
 
     const setMessLocation = async () => {
-        const fetchlocation = async()=>{
-              const handleSuccess = async (position) => {
+        const fetchLocation = async () => {
+            const handleSuccess = async (position) => {
                 setLocation({
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
                 });
-                const response = await axios.patch("/api/user/updating-user-details",{
-                    longitude: position.coords.latitude,
-                    latitude: position.coords.longitude,
-                })
-                console.log(response);
+
+                try {
+                    const response = await axios.patch("/api/user/updating-user-details", {
+                        longitude: position.coords.longitude, // Corrected
+                        latitude: position.coords.latitude,   // Corrected
+                    });
+                    console.log(response);
+                } catch (err) {
+                    console.error("Error updating user details:", err);
+                    setLocationError("Failed to update location. " + err.message);
+                }
             };
-          
-              const handleError = (error) => {
-                setError(error.message);
-              };
-          
-              if (navigator.geolocation) {
+
+            const handleError = (error) => {
+                setLocationError(error.message);
+            };
+
+            if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
-                  enableHighAccuracy: true, // Request higher accuracy
-                  timeout: 5000, // Set a timeout (5 seconds in this case)
-                  maximumAge: 0 // Do not use a cached position
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
                 });
-              } else {
-                setError("Geolocation is not supported by this browser.");
-              }
-          }
-          fetchlocation()
-          
-        //   const response = await axios.patch("/api/user/updating-user-details",{
-        //     longitude: location.longitude,
-        //     latitude: location.latitude
-        //   })
-    }
+            } else {
+                setLocationError("Geolocation is not supported by this browser.");
+            }
+        };
+
+        fetchLocation();
+    };
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                // If using token-based auth, uncomment and implement getCookie
-                // const token = getCookie('accessToken');
-
-                // Make a request to the backend, including the token in the Authorization header if needed
-                const response = await axios.get(
-                    "/api/user/fetching-user-details",
-                    {
-                        withCredentials: true,
-                        // headers: {
-                        //     Authorization: `Bearer ${token}`,
-                        // },
-                    }
-                );
+                const response = await axios.get("/api/user/fetching-user-details", {
+                    withCredentials: true,
+                });
                 console.log(response);
-                // Check if response data contains user information
                 if (response.data.success) {
                     setUserData(response.data.response);
                 } else {
-                    setErrorUser(
-                        response.data.message || "Failed to load user data."
-                    );
+                    setErrorUser(response.data.message || "Failed to load user data.");
                 }
             } catch (err) {
                 console.error("Error fetching user data:", err);
@@ -95,9 +85,7 @@ export default function Profile() {
                 if (response.data.success) {
                     setSubscriptions(response.data.response);
                 } else {
-                    setErrorSubscriptions(
-                        response.data.message || "Failed to load subscriptions."
-                    );
+                    setErrorSubscriptions(response.data.message || "Failed to load subscriptions.");
                 }
             } catch (error) {
                 console.error("Error fetching subscriptions:", error);
@@ -109,7 +97,7 @@ export default function Profile() {
 
         fetchUserData();
         fetchSubscriptions();
-    }, []); // Removed router from dependencies to fetch only once on mount
+    }, []);
 
     if (loadingUser || loadingSubscriptions) {
         return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -165,11 +153,25 @@ export default function Profile() {
                                 </p>
                                 <p className="flex items-center">
                                     <MapPinIcon className="w-5 h-5 mr-2 text-green-600" />
-                                    <strong>Address:</strong>{" "}
-                                    {userData.address}
+                                    <strong>Address:</strong> {userData.address}
                                 </p>
 
-                                <button className="bg-green-400 p-3 rounded-md text-black" onClick={setMessLocation}>Calibrate location</button>
+                                <button
+                                    className="bg-green-400 p-3 rounded-md text-black"
+                                    onClick={setMessLocation}
+                                >
+                                    Calibrate location
+                                </button>
+                                {locationError && (
+                                    <div className="text-red-500 mt-2">
+                                        {locationError}
+                                    </div>
+                                )}
+                                {location && (
+                                    <div className="mt-2 text-green-600">
+                                        Location updated successfully!
+                                    </div>
+                                )}
                                 {userData.type === "mess" && (
                                     <>
                                         <p>
@@ -178,7 +180,6 @@ export default function Profile() {
                                         <p>
                                             <strong>Address:</strong> {userData.address}
                                         </p>
-                                        {/* Removed the redundant description */}
                                         <p className="flex items-center">
                                             <MapPinIcon className="w-5 h-5 mr-2 text-green-600" />
                                             <strong>Location:</strong>{" "}
