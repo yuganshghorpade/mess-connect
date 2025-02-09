@@ -64,24 +64,19 @@ userSchema.pre("save",async function (next) {
     if(!this.isModified("password")) return next();
 
     try {
-        console.log(this.password);
-        this.password = await bcrypt.hash(this.password,10)
-        console.log(this.password);
-        next()
+       this.password = await bcrypt.hash(this.password,10);
+        next();
     } catch (error) {
-        return NextResponse.json(
-            {
-                status: 505,
-                message: `An unexpected error occured while hashing the password. Error:-${error}`
-            }
-        )
+        next(error)
     }
-})
+});
 
 userSchema.methods.isPasswordCorrect = async function (password) {
     console.log(this.password);
     console.log(password);
-    return await bcrypt.compare(password,this.password)
+    const passwordcorrectness =  await bcrypt.compare(password,this.password)
+    console.log(passwordcorrectness)
+    return passwordcorrectness
 }
 
 userSchema.methods.generateAccessToken = function () {

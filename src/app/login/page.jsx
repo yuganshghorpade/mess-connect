@@ -1,190 +1,102 @@
 'use client'
 import { useState } from "react";
-import { useRouter } from 'next/navigation';  
+import { useRouter } from 'next/navigation';
 import axios from "axios";
 import Link from "next/link";
-import { Loader, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function Login() {
-
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [accountType, setAccountType] = useState("user");  
+    const [accountType, setAccountType] = useState("user");
     const [errorMessage, setErrorMessage] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
-    const router = useRouter();  
+    const router = useRouter();
 
     const handleSubmit = async (e) => {
-        setIsLoading(true)
+        setIsLoading(true);
         e.preventDefault();
-        setErrorMessage("");  
-        setSuccessMessage(""); 
+        setErrorMessage("");
+
         try {
-            const response = await axios.post(`/api/auth/login?acctype=${accountType}`, { 
+            const response = await axios.post(`/api/auth/login?acctype=${accountType}`, {
                 email,
-                password    
-            },{
+                password
+            }, {
                 withCredentials: true
             });
 
             if (response.data.success) {
-                setSuccessMessage("Login successful! Redirecting...");
                 setTimeout(() => {
-                    if (accountType === 'user') {
-                        router.push('/user');  
-                    } else if (accountType === 'mess') {
-                        router.push('/owner'); 
-                    }
-                }, 1500);  
+                    router.push(accountType === 'user' ? '/user' : '/owner');
+                }, 1500);
             } else {
                 setErrorMessage(response.data.message);
+                setIsLoading(false);
             }
         } catch (error) {
-            setErrorMessage(`Login failed. Please check your details. Error: ${error}`);
-        }finally{
-            setIsLoading(false)
+            setErrorMessage("Login failed. Please check your details.");
+            setIsLoading(false);
         }
     };
 
     return (
-        <div style={styles.loginContainer}>
-            <div style={styles.loginBox}>
-                <h2 style={styles.heading}>Login </h2>
-                <form onSubmit={handleSubmit}>
-                    <div style={styles.formGroup}>
-                    <div style={styles.formGroup}>
-                        <label>Account Type</label>
+        <div className="flex justify-center items-center min-h-screen bg-cover bg-center" 
+            style={{ backgroundImage: "url('https://wallpaperaccess.com/full/767352.jpg')" }}>
+            <div className="bg-white bg-opacity-90 p-8 rounded-2xl shadow-xl max-w-md w-full">
+                <h2 className="text-3xl font-bold text-center text-green-700 mb-6 uppercase">Login</h2>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block font-medium">Account Type</label>
                         <select
                             value={accountType}
                             onChange={(e) => {
-                                setEmail("")
-                                setPassword("")
-                                setAccountType(e.target.value)
+                                setEmail("");
+                                setPassword("");
+                                setAccountType(e.target.value);
                             }}
                             required
-                            style={styles.input}
+                            className="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-green-500"
                         >
                             <option value="user">User</option>
                             <option value="mess">Mess</option>
                         </select>
                     </div>
-                        <label>Email</label>
-                        <input 
+
+                    <div>
+                        <label className="block font-medium">Email</label>
+                        <input
                             type="email"
                             placeholder="Enter your email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            style={styles.input}
+                            className="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-green-500"
                         />
                     </div>
-                    <div style={styles.formGroup}>
-                        <label>Password</label>
-                        <input 
+
+                    <div>
+                        <label className="block font-medium">Password</label>
+                        <input
                             type="password"
                             placeholder="Enter your password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            style={styles.input}
+                            className="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-green-500"
                         />
                     </div>
-                    
-                    {isLoading ? (<>
-                    <Loader2 className="animate-spin" />
-                        <button type="submit" disabled style={styles.btnLogin}>Please Wait</button>
-                        </>
-                    ) : (
-                        <button type="submit" style={styles.btnLogin}>Login</button>
-                    )}
-                </form>
-                {errorMessage && <div style={styles.errorMessage}>{errorMessage}</div>}
-                {successMessage && <div style={styles.successMessage}>{successMessage}</div>}
 
-               <Link href={'/register'}> <div className="flex justify-center mt-4 text-blue-600">Create new Account</div></Link>
+                    <button type="submit" className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition flex justify-center items-center">
+                        {isLoading ? <Loader2 className="animate-spin" /> : "Login"}
+                    </button>
+                </form>
+
+                {errorMessage && <div className="mt-4 p-3 text-center bg-red-500 text-white rounded-lg">{errorMessage}</div>}
+
+                <Link href="/register" className="block text-center text-blue-600 mt-4 hover:underline">Create a new account</Link>
             </div>
         </div>
     );
 }
-
-const styles = {
-    loginContainer: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundImage: 'url("/bg.jpg")', 
-        backgroundSize: 'cover',  
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundColor: '#f0f4f7',
-        backdropFilter: 'blur(6px)',  
-    },
-    loginBox: {
-        backgroundColor: 'rgba(255, 255, 255, 0.85)',  
-        padding: '50px',
-        borderRadius: '15px',
-        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)', 
-        width: '100%',
-        maxWidth: '450px',
-        animation: 'fadeIn 1s ease-in-out',  
-    },
-    heading: {
-        textAlign: 'center',
-        fontSize: '28px',
-        fontWeight: '700',
-        marginBottom: '40px',
-        color: '#2c3e50',
-        fontFamily: 'Poppins, sans-serif',  
-        letterSpacing: '1px',
-        textTransform: 'uppercase',
-    },
-    formGroup: {
-        marginBottom: '25px',
-    },
-    input: {
-        width: '100%',
-        padding: '15px',
-        fontSize: '16px',
-        border: '1px solid #ccc',
-        borderRadius: '8px',
-        boxSizing: 'border-box',
-        outline: 'none',
-        transition: 'all 0.3s',
-        fontFamily: 'Poppins, sans-serif',
-        backgroundColor: '#f9f9f9',
-        boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.05)',
-    },
-    btnLogin: {
-        width: '100%',
-        padding: '15px',
-        fontSize: '18px',
-        backgroundColor: '#03C03C',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s, transform 0.2s',
-        fontFamily: 'Poppins, sans-serif',
-        boxShadow: '0 5px 10px rgba(52, 152, 219, 0.2)',
-    },
-    errorMessage: {
-        marginTop: '20px',
-        padding: '12px',
-        textAlign: 'center',
-        backgroundColor: '#ff6b6b',
-        color: '#fff',
-        borderRadius: '8px',
-        fontFamily: 'Poppins, sans-serif',
-    },
-    successMessage: {
-        marginTop: '20px',
-        padding: '12px',
-        textAlign: 'center',
-        backgroundColor: '#2ecc71',
-        color: '#fff',
-        borderRadius: '8px',
-        fontFamily: 'Poppins, sans-serif',
-    }
-};

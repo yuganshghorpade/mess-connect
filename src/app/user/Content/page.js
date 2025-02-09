@@ -19,11 +19,12 @@ export default function Content() {
         const { latitude, longitude } = position.coords;
         try {
           const response = await axios.post(`/api/mess/fetch-nearby-messes`, {
-            latitude,
-            longitude
+            latitude:latitude,
+            longitude:longitude
           }, {
             withCredentials: true
           });
+          console.log("fetchhing mess response",response)
           if (response.data.success) {
             setLocalMess(response.data.messes);
           } else {
@@ -61,7 +62,7 @@ export default function Content() {
         ) : error ? (
           <p className="text-center text-red-600">{error}</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {localMess && localMess.length > 0 ? (
               localMess.map((menu, index) => (
                 <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden bg-white">
@@ -79,26 +80,13 @@ export default function Content() {
                     <h3 className="text-2xl font-semibold text-gray-800">{menu.name}</h3>
                     <p className="text-gray-600 mt-2">{menu.address}</p>
 
-                    {/* Daily Menu
-                    <div className="mt-6">
-                      <h4 className="text-lg font-semibold text-gray-700">Today's Menu:</h4>
-                      <ul className="list-disc list-inside text-gray-700 mt-3">
-                        {menu.menuItems && Array.isArray(menu.menuItems) && menu.menuItems.length > 0 ? (
-                          menu.menuItems.map((item, idx) => (
-                            <li key={idx}>{item}</li>
-                          ))
-                        ) : (
-                          <li>No menu available</li>
-                        )}
-                      </ul>
-                    </div> */}
                   </CardContent>
                   
                   <CardFooter className="flex justify-between items-center p-4 bg-gray-100">
                     <Button 
                       onClick={() => handleViewDetails(menu._id)} 
                       className="bg-green-600 hover:bg-green-400 text-white py-2 px-4 rounded-lg"
-                      disabled={loadingDetails === menu._id} // Disable only the clicked button
+                      disabled={loadingDetails === menu._id} 
                     >
                       {loadingDetails === menu._id ? "Loading..." : "View Details"}
                     </Button>

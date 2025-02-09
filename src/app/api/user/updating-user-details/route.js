@@ -46,7 +46,7 @@ export async function PATCH(request) {
 
         user.location = {
             type: 'Point',
-            coordinates: [longitude, latitude], // Longitude first, then latitude
+            coordinates: [latitude, longitude], // Longitude first, then latitude
           };
         await user.save();
 

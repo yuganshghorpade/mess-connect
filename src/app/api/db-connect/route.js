@@ -15,6 +15,8 @@ export async function GET() {
         //     await user.save();
         // }
         // createSampleData()
+        const status = await bcrypt.compare("hakka","$2b$10$OoNxP6KwTH9gJ.9mTAc8cuMdBkMPffwPvOmhhiNE/f0HR.64vFS7i")
+        console.log(status)
         return NextResponse.json({
             message:"Server is running on port 8000 and data created"
         })

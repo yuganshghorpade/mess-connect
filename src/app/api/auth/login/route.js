@@ -5,16 +5,23 @@ import { cookies } from "next/headers";
 import Mess from "@/model/mess.model";
 import Cookie from 'js-cookie';
 import { serialize } from 'cookie';
+import bcrypt from 'bcrypt'
 
 
 export async function POST(request) {
     await dbConnect();
 
     try {
+
+        const status = await bcrypt.compare("hakka","$2b$10$OoNxP6KwTH9gJ.9mTAc8cuMdBkMPffwPvOmhhiNE/f0HR.64vFS7i")
+        console.log(status)
+
+
         const { email, password } = await request.json();
         const url = new URL(request.url);
         const queryParams = new URLSearchParams(url.search);
         const type = queryParams.get("acctype");
+        console.log("type",type)
 
         if (!(email || password)) {
             return NextResponse.json(
@@ -33,6 +40,7 @@ export async function POST(request) {
         } else if (type == "mess") {
             user = await Mess.findOne({ email });
         }
+        console.log("user",user)
 
         if (!user) {
             return NextResponse.json(
