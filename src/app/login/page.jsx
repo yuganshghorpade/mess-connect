@@ -37,6 +37,7 @@ export default function Login() {
         } catch (error) {
             setErrorMessage("Login failed. Please check your details.");
             setIsLoading(false);
+            console.log(error)
         }
     };
 

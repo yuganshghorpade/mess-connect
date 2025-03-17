@@ -36,7 +36,7 @@ export async function POST(request) {
       const newUser = new User({
         username,
         email,
-        password: hashedPassword, // Store hashed password
+        password, // Store hashed password
         verifyCode,
         verifyCodeExpiry: expiryDate,
         isVerified: true, // Mark as not verified initially
@@ -55,7 +55,7 @@ export async function POST(request) {
     console.error('Error registering user:', error);
     // Send error response
     return NextResponse.json(
-      { success: false, message: 'Error registering user' },
+      { success: false, message: error.message },
       { status: 500 }
     );
   }
