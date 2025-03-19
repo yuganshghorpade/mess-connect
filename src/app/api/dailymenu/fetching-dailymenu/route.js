@@ -40,13 +40,17 @@ export async function GET(request) {
 
         const messIds = messes.map((mess) => mess._id);
 
-        // Fetch daily menus for nearby messes and populate mess details
-        const dailyMenus = await Dailymenu.find({ mess: { $in: messIds } })
-            .populate("mess")
-            .sort({ "mess.distance": 1 });
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0); // Set time to 00:00:00
 
-        // Log the response before sending it
-        console.log("Fetched Daily Menus:", dailyMenus);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+        // Fetch daily menus for nearby messes and populate mess details
+        const dailyMenus = await Dailymenu.find({
+            mess: { $in: messIds } ,
+            createdAt: { $gte: startOfDay, $lte: endOfDay }
+        }).populate("mess")
+        .sort({ "mess.distance": 1 });
 
         return NextResponse.json({
             success: true,

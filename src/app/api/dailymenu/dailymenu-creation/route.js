@@ -7,7 +7,7 @@ export async function POST(request) {
     try {
         await dbConnect();
         const { id, type } = await getDataFromToken(request);
-        console.log(type);
+        console.log(id, type);
         const { menu } = await request.json();
         if (type == 'user') {
             return NextResponse.json(

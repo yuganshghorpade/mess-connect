@@ -6,6 +6,7 @@ import Mess from "@/model/mess.model";
 import Cookie from 'js-cookie';
 import { serialize } from 'cookie';
 import bcrypt from 'bcrypt'
+import Subscription from "@/model/subscription.model";
 
 
 export async function POST(request) {
@@ -141,6 +142,33 @@ export async function POST(request) {
         );
 
         cookieHeaders.forEach(cookie => response.headers.append('Set-Cookie', cookie));
+
+        let subs;
+        if(type=="user"){
+            subs = await Subscription.find({user:user._id});
+        }else{
+            subs = await Subscription.find({mess:user._id});
+        }
+            const time = Date.now();
+            for (const subscription of subs) {
+                if (subscription.expiry <= time) {
+                    try {
+                        await Subscription.deleteOne({ _id: subscription._id }); 
+                        expired = true; 
+                        console.log("Document deleted successfully.");
+                    } catch (error) {
+                        console.error("Error deleting document:", error);
+                    }
+                }
+            }
+
+            for (const subscription of subs) {
+                if (subscription.startDate <= time) {
+                    subscription.status = "Active";
+                    await subscription.save();
+                }
+            }
+        
 
         return response;
 

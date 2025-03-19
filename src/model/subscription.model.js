@@ -33,26 +33,26 @@ const subscriptionSchema = new mongoose.Schema(
     }
 );
 
-subscriptionSchema.statics.updateExpiredSubscriptions = async function (
-    id,
-    type
-) {
-    try {
-        const now = Date.now();
-        const query =
-            type === "user"
-                ? { user: id, expiry: { $lt: now }, status: "Active" }
-                : { mess: id, expiry: { $lt: now }, status: "Active" };
+// subscriptionSchema.statics.updateExpiredSubscriptions = async function (
+//     id,
+//     type
+// ) {
+//     try {
+//         const now = Date.now();
+//         const query =
+//             type === "user"
+//                 ? { user: id, expiry: { $lt: now }, status: "Active" }
+//                 : { mess: id, expiry: { $lt: now }, status: "Active" };
 
         
-        const result = await this.updateMany(query, {
-            $set: { status: "Expired" },
-        });
-        console.log(`Updated ${result.nModified} subscriptions to 'Expired'.`);
-    } catch (error) {
-        console.error("Error updating expired subscriptions:", error);
-    }
-};
+//         const result = await this.updateMany(query, {
+//             $set: { status: "Expired" },
+//         });
+//         console.log(`Updated ${result.nModified} subscriptions to 'Expired'.`);
+//     } catch (error) {
+//         console.error("Error updating expired subscriptions:", error);
+//     }
+// };
 
 const Subscription =
     mongoose.models.Subscription ||

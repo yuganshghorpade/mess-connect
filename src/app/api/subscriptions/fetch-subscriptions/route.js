@@ -7,7 +7,7 @@ export async function GET(request) {
     try {
         await dbConnect();
         const {id, type} = await getDataFromToken(request)
-        await Subscription.updateExpiredSubscriptions(id,type);
+        // await Subscription.updateExpiredSubscriptions(id,type);
     
         const query = type === "user" 
             ? { user : id } 
@@ -15,7 +15,7 @@ export async function GET(request) {
         
         const response = await Subscription.find(query)
         .populate("mess user")
-        .sort({createdAt : -1})
+        .sort({createdAt : 1})
     
         return NextResponse.json({
             success:true,

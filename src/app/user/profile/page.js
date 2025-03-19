@@ -150,12 +150,17 @@ export default function Profile() {
                     </p>
                     <p
                         className={`mt-4 font-semibold text-lg ${
-                            subscription.isActive
+                            subscription.status=="Active"
                                 ? "text-green-600"
-                                : "text-green-600"
+                                : "text-yellow-600"
                         }`}
                     >
                         {subscription.status}
+                    </p>
+                    <p
+                        className={`mt-4 font-semibold text-lg`}
+                    >
+                        {subscription.mealType}
                     </p>
                 </li>
             ))}

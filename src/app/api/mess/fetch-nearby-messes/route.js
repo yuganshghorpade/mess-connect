@@ -46,7 +46,7 @@ export async function POST(request) {
 
         // Check if messes were found
         if (nearbyMesses.length > 0) {
-            console.log('Found messes:', nearbyMesses);
+            // console.log('Found messes:', nearbyMesses);
             return NextResponse.json({
                 success: true,
                 message: "Messes fetched successfully",
