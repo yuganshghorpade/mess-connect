@@ -14,7 +14,7 @@ export async function POST(request) {
             owner: userid, 
             mess: messid, 
             status: "Active",
-            amount
+            mealType: type
         });
         if (subscription) {
             await Trade.create({ owner: userid, mess: messid, mealtype: type, amount: amount });
