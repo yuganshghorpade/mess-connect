@@ -52,6 +52,8 @@ export async function GET(request) {
         }).populate("mess")
         .sort({ "mess.distance": 1 });
 
+        console.log(dailyMenus)
+
         return NextResponse.json({
             success: true,
             message: "Daily Menu fetched successfully",

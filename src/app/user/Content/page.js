@@ -4,15 +4,14 @@ import axios from 'axios';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // Next.js router for navigation
+import { useRouter } from 'next/navigation'; 
 
 export default function Content() {
   const [localMess, setLocalMess] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [loadingDetails, setLoadingDetails] = useState(null); // Store the ID of the clicked mess
-  const router = useRouter(); // Next.js router hook
-  
+  const [loadingDetails, setLoadingDetails] = useState(null); 
+  const router = useRouter(); 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {

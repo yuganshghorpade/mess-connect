@@ -3,6 +3,7 @@ import User from '@/model/user.model.js';
 import bcrypt from 'bcrypt';
 import { NextResponse } from 'next/server';
 
+
 export async function POST(request) {
   await dbConnect(); // Ensure database connection
 

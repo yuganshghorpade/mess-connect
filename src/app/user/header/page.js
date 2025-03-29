@@ -5,19 +5,19 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaSearch } from "react-icons/fa";
 
 export default function Header() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userData, setUserData] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isLoggingOut, setIsLoggingOut] = useState(false); // Loading state for logout
-    const [isSearching, setIsSearching] = useState(false); // Loading state for search
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
     const router = useRouter();
 
     const logoutUser = async () => {
-        setIsLoggingOut(true); // Start loading
+        setIsLoggingOut(true);
         try {
             const response = await axios.post("/api/auth/logout", {}, { withCredentials: true });
             router.replace("/login");
@@ -25,14 +25,14 @@ export default function Header() {
         } catch (error) {
             console.error(error);
         } finally {
-            setIsLoggingOut(false); // Stop loading
+            setIsLoggingOut(false);
         }
     };
 
     const handleSearch = async (e) => {
         e.preventDefault();
         if (searchTerm) {
-            setIsSearching(true); // Start loading
+            setIsSearching(true);
             try {
                 const response = await axios.post("/api/mess/fetching-messes-locations", { searchTerm });
                 if (response.data.success) {
@@ -48,7 +48,7 @@ export default function Header() {
             } catch (error) {
                 console.error("Error fetching data:", error);
             } finally {
-                setIsSearching(false); // Stop loading
+                setIsSearching(false);
             }
         } else {
             alert("Please enter a search term.");
@@ -63,36 +63,92 @@ export default function Header() {
         <div className="w-full bg-gradient-to-r from-green-500 via-green-300 to-green-500 shadow-md">
             <div className="flex items-center justify-between h-16 px-4 md:px-10">
                 <div className="flex items-center flex-1">
-                <div class="text-white text-3xl md:text-4xl font-extrabold drop-shadow-lg tracking-wide">
-        Taste <span class="text-yellow-400 mr-4">Buddies</span>
-    </div>
+                    <div className="text-white text-3xl md:text-4xl font-extrabold drop-shadow-lg tracking-wide mr-6">
+                        Taste <span className="text-yellow-400">Buddies</span>
+                    </div>
 
-
-
-
-                    <form onSubmit={handleSearch} className="flex-1 max-w-[600px]">
-                        <div className="flex space-x-4 w-full">
-                            <div className="flex items-center bg-white rounded-full border shadow-sm w-full md:w-auto">
-                                <Input
-                                    type="text"
-                                    placeholder="Search Mess"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="h-10 px-4 py-2 rounded-l-full border-none outline-none text-gray-700 w-full transition-all focus:ring-2 focus:ring-green-400"
-                                    disabled={isSearching} // Disable input during search
-                                />
+                    <form onSubmit={handleSearch} className="flex-1 max-w-[400px] w-full">
+                        <div className="relative w-full">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <FaSearch className="text-green-600 opacity-70" />
                             </div>
-                            <Button
-                                type="submit"
-                                className="h-10 px-4 py-2 rounded-full bg-green-600 text-white"
-                                disabled={isSearching} // Disable button during search
+                            <Input
+                                type="text"
+                                placeholder="Search Mess"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="
+                                    pl-10 
+                                    pr-12 
+                                    h-10 
+                                    w-full 
+                                    rounded-full 
+                                    bg-white 
+                                    border 
+                                    border-green-300 
+                                    focus:border-green-500 
+                                    focus:ring-2 
+                                    focus:ring-green-200 
+                                    text-gray-700 
+                                    transition-all 
+                                    duration-300 
+                                    ease-in-out
+                                    shadow-sm
+                                "
+                                disabled={isSearching}
+                            />
+                            <button 
+                                type="submit" 
+                                className="
+                                    absolute 
+                                    right-1 
+                                    top-1/2 
+                                    -translate-y-1/2 
+                                    bg-green-600 
+                                    text-white 
+                                    rounded-full 
+                                    w-8 
+                                    h-8 
+                                    flex 
+                                    items-center 
+                                    justify-center 
+                                    hover:bg-green-700 
+                                    transition-colors 
+                                    duration-300 
+                                    mr-1
+                                "
+                                disabled={isSearching}
                             >
-                                {isSearching ? "Searching..." : "Search"} {/* Show loading text */}
-                            </Button>
+                                {isSearching ? (
+                                    <svg 
+                                        className="animate-spin h-4 w-4 text-white" 
+                                        xmlns="http://www.w3.org/2000/svg" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle 
+                                            className="opacity-25" 
+                                            cx="12" 
+                                            cy="12" 
+                                            r="10" 
+                                            stroke="currentColor" 
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path 
+                                            className="opacity-75" 
+                                            fill="currentColor" 
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                ) : (
+                                    <FaSearch />
+                                )}
+                            </button>
                         </div>
                     </form>
                 </div>
 
+                {/* Rest of the component remains the same as previous version */}
                 <div className="md:hidden">
                     <button onClick={toggleMenu} className="text-white focus:outline-none">
                         <svg
@@ -126,15 +182,18 @@ export default function Header() {
                             <Link href="/user/menu">
                                 <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Menu</span>
                             </Link>
+                            <Link href="/user/trades">
+                                <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Trade</span>
+                            </Link>
                             <Link href="/user/profile">
                                 <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Profile</span>
                             </Link>
                             <Button
                                 onClick={logoutUser}
                                 className="bg-red-400 text-white hover:bg-white-300 rounded-xl px-4 py-2"
-                                disabled={isLoggingOut} // Disable button during logout
+                                disabled={isLoggingOut}
                             >
-                                {isLoggingOut ? "Logging out..." : "Logout"} {/* Show loading text */}
+                                {isLoggingOut ? "Logging out..." : "Logout"}
                             </Button>
                         </>
                     )}
@@ -149,13 +208,17 @@ export default function Header() {
                     <Link href="/user/menu">
                         <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Menu</span>
                     </Link>
+                    <Link href="/user/trades">
+                        <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Trade</span>
+                    </Link>
                     <Link href="/user/profile">
                         <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Profile</span>
                     </Link>
+                   
                     <Button
                         onClick={logoutUser}
                         className="bg-red-500 text-gray-800 hover:bg-white-300 rounded-xl px-4 py-2"
-                        disabled={isLoggingOut} // Disable button during logout
+                        disabled={isLoggingOut}
                     >
                         {isLoggingOut ? "Logging out..." : "Logout"}
                     </Button>
