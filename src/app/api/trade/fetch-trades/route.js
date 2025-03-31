@@ -8,7 +8,16 @@ export async function GET(request) {
         await dbConnect();
         const {id, type} = await getDataFromToken(request)
         if(type=="trader"){
-            const trades = await Trade.find({ status: "Pending" })
+            const startOfDay = new Date();
+            startOfDay.setUTCHours(0, 0, 0, 0);
+        
+            const endOfDay = new Date();
+            endOfDay.setUTCHours(23, 59, 59, 999);
+
+            const trades = await Trade.find({
+                status: "Pending",
+                createdAt:{ $gte: startOfDay, $lte: endOfDay },
+            })
             .populate("owner mess trader")
             .sort({createdAt : -1})
             return NextResponse.json({
