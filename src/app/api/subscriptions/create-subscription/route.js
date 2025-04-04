@@ -30,7 +30,7 @@ export async function POST(request){
             })
         }
 
-        const existingSubscription = await Subscription.findOne({
+        let existingSubscription = await Subscription.findOne({
             user:id,
             mealType:mealType,
             status:'Active'
@@ -54,6 +54,13 @@ export async function POST(request){
         //         expiry:durationInMilliseconds
         //     })
         // }
+        if(existingSubscription){
+            existingSubscription = await Subscription.findOne({
+                user:id,
+                mealType:mealType,
+                status:'Queued'
+            })
+        }
 
         const subscription = await Subscription.create({
             user : id,

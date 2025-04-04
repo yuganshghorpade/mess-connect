@@ -213,11 +213,18 @@ export default function Profile() {
                                         key={subscription._id}
                                         className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 transition-transform transform hover:scale-105"
                                     >
+                                        <div className="flex justify-between">
                                         <p className="text-gray-900 font-semibold text-xl mb-2">
                                             {subscription.mess
                                                 ? subscription.user.username
                                                 : subscription.user.username}
                                         </p>
+                                        <p className="text-gray-600 font-normal text-base mb-2">
+                                            {subscription.mess
+                                                ? subscription.user.contactNo
+                                                : subscription.user.contactNo}
+                                        </p>
+                                        </div>
                                         <p className="text-gray-600 text-sm">
                                             <strong>Start Date:</strong>{" "}
                                             {new Date(subscription.startDate).toLocaleDateString()}
