@@ -5,7 +5,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import Header from "../header/page";
 import Footer from "@/components/ui/footer";
-import { MapPinIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, UserCircleIcon, CalendarIcon, CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
 
 export default function Profile() {
     const [userData, setUserData] = useState(null);
@@ -14,11 +14,13 @@ export default function Profile() {
     const [loadingSubscriptions, setLoadingSubscriptions] = useState(true);
     const [errorUser, setErrorUser] = useState("");
     const [errorSubscriptions, setErrorSubscriptions] = useState("");
-    const [location, setLocation] = useState(null); // Added
-    const [locationError, setLocationError] = useState(""); // Added
+    const [location, setLocation] = useState(null);
+    const [locationError, setLocationError] = useState("");
+    const [loadingDetails, setLoadingDetails] = useState(null);
     const router = useRouter();
 
     const setMessLocation = async () => {
+        setLoadingDetails("location");
         const fetchLocation = async () => {
             const handleSuccess = async (position) => {
                 setLocation({
@@ -28,20 +30,23 @@ export default function Profile() {
 
                 try {
                     const response = await axios.patch("/api/user/updating-user-details", {
-                        longitude: position.coords.longitude, // Corrected
-                        latitude: position.coords.latitude,   // Corrected
+                        longitude: position.coords.longitude,
+                        latitude: position.coords.latitude,
                     });
                     console.log(response);
+                    setLoadingDetails(null);
                 } catch (err) {
                     console.error("Error updating user details:", err);
                     setLocationError("Failed to update location. " + err.message);
+                    setLoadingDetails(null);
                 }
             };
 
             const handleError = (error) => {
                 setLocationError(error.message);
+                setLoadingDetails(null);
             };
-
+            
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
                     enableHighAccuracy: true,
@@ -50,6 +55,7 @@ export default function Profile() {
                 });
             } else {
                 setLocationError("Geolocation is not supported by this browser.");
+                setLoadingDetails(null);
             }
         };
 
@@ -100,155 +106,256 @@ export default function Profile() {
     }, []);
 
     if (loadingUser || loadingSubscriptions) {
-        return <div className="flex justify-center items-center h-screen">Loading...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+                <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="mt-4 text-lg font-medium text-gray-700">Loading your profile...</p>
+            </div>
+        );
     }
 
     if (errorUser) {
-        return <div className="text-red-500 text-center mt-4">{errorUser}</div>;
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-red-50">
+                <ExclamationCircleIcon className="w-16 h-16 text-red-500 mb-4" />
+                <div className="text-red-600 text-xl font-semibold text-center max-w-md">
+                    {errorUser}
+                </div>
+                <button 
+                    onClick={() => window.location.reload()}
+                    className="mt-6 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                    Try Again
+                </button>
+            </div>
+        );
     }
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50">
+        <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
             <Header />
             <main className="flex-grow">
-                <div className="container mx-auto p-6 sm:p-8 lg:p-12">
-                    <h1 className="text-3xl font-extrabold text-gray-800 mb-6">
-                        Profile Page
-                    </h1>
-                    {userData ? (
-                        <div className="bg-white shadow-lg rounded-lg p-8 sm:p-10 lg:p-12 mb-8">
-                            <div className="flex items-center mb-6">
-                                {/* User Icon */}
-                                <div className="bg-gray-200 rounded-full p-2 mr-4">
-                                    <svg
-                                        className="w-10 h-10 text-gray-500"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M5.121 17.804A13.937 13.937 0 0112 15.944c3.122 0 6.008 1.097 8.121 2.86M12 12a5 5 0 100-10 5 5 0 000 10zm0 2a9 9 0 00-9 9h18a9 9 0 00-9-9z"
-                                        />
-                                    </svg>
-                                </div>
-                                
-                                {/* Username */}
-                                <h2 className="text-2xl font-semibold text-gray-900">
-                                    {userData.username}
-                                </h2>
-                            </div>
-                            <div className="text-gray-700 space-y-3">
-                                <p>
-                                    <strong>Email:</strong> {userData.email}
-                                </p>
-                                <p>
-                                    <strong>Contact:</strong> {userData.contactNo}
-                                </p>
-                                <p>
-                                    <strong>Description:</strong> {userData.description}
-                                </p>
-                                <p className="flex items-center">
-                                    <MapPinIcon className="w-5 h-5 mr-2 text-green-600" />
-                                    <strong>Address:</strong> {userData.address}
-                                </p>
-
-                                <button
-                                    className="bg-green-400 p-3 rounded-md text-black"
-                                    onClick={setMessLocation}
-                                >
-                                    Calibrate location
-                                </button>
-                                {locationError && (
-                                    <div className="text-red-500 mt-2">
-                                        {locationError}
-                                    </div>
-                                )}
-                                {location && (
-                                    <div className="mt-2 text-green-600">
-                                        Location updated successfully!
-                                    </div>
-                                )}
-                                {userData.type === "mess" && (
+                <div className="max-w-6xl mx-auto p-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                        <h1 className="text-3xl font-bold text-gray-800 relative">
+                            My Profile
+                            <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-blue-500 rounded-full"></span>
+                        </h1>
+                        
+                        {userData && userData.type === "mess" && (
+                            <button
+                                className={`mt-4 md:mt-0 flex items-center px-4 py-2 rounded-lg shadow-md text-white font-medium transition-all 
+                                ${loadingDetails === "location" 
+                                    ? "bg-gray-400 cursor-not-allowed" 
+                                    : "bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 hover:shadow-lg"}`}
+                                onClick={setMessLocation}
+                                disabled={loadingDetails === "location"}
+                            >
+                                {loadingDetails === "location" ? (
                                     <>
-                                        <p>
-                                            <strong>Mess Name:</strong> {userData.messName}
-                                        </p>
-                                        <p>
-                                            <strong>Address:</strong> {userData.address}
-                                        </p>
-                                        <p className="flex items-center">
-                                            <MapPinIcon className="w-5 h-5 mr-2 text-green-600" />
-                                            <strong>Location:</strong>{" "}
-                                            {userData.location && userData.location.coordinates
-                                                ? `Lat: ${userData.location.coordinates[0]}, Long: ${userData.location.coordinates[1]}`
-                                                : "Location not available"}
-                                        </p>
+                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Updating location...
+                                    </>
+                                ) : (
+                                    <>
+                                        <MapPinIcon className="w-5 h-5 mr-2" />
+                                        Update Location
                                     </>
                                 )}
+                            </button>
+                        )}
+                    </div>
+
+                    {userData && (
+                        <div className="mb-10">
+                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                                <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 text-white">
+                                    <div className="flex items-center">
+                                        <div className="bg-white rounded-full p-2 mr-4 shadow-md">
+                                            <UserCircleIcon className="w-16 h-16 text-blue-500" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-bold mb-1">
+                                                {userData.messName || userData.username}
+                                            </h2>
+                                            <p className="text-blue-100 text-sm">
+                                                {userData.type === "mess" ? "Mess Provider" : "Mess"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="p-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <div className="flex items-start">
+                                                <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                                                    <svg className="w-5 h-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-gray-500 font-medium">Email</p>
+                                                    <p className="text-gray-800">{userData.email}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-start">
+                                                <div className="bg-purple-100 p-2 rounded-lg mr-3">
+                                                    <svg className="w-5 h-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-gray-500 font-medium">Contact</p>
+                                                    <p className="text-gray-800">{userData.contactNo || "Not provided"}</p>
+                                                </div>
+                                            </div>
+
+                                            {userData.type === "mess" && (
+                                                <div className="flex items-start">
+                                                    <div className="bg-green-100 p-2 rounded-lg mr-3">
+                                                        <MapPinIcon className="w-5 h-5 text-green-600" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-gray-500 font-medium">Location</p>
+                                                        <p className="text-gray-800">
+                                                            {userData.location && userData.location.coordinates
+                                                                ? `Lat: ${userData.location.coordinates[0].toFixed(5)}, Long: ${userData.location.coordinates[1].toFixed(5)}`
+                                                                : "Location not available"}
+                                                        </p>
+                                                        {locationError && (
+                                                            <p className="text-red-500 text-sm mt-1">{locationError}</p>
+                                                        )}
+                                                        {location && !locationError && (
+                                                            <p className="text-green-500 text-sm mt-1">Location updated successfully!</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="space-y-4">
+                                            <div className="flex items-start">
+                                                <div className="bg-yellow-100 p-2 rounded-lg mr-3">
+                                                    <MapPinIcon className="w-5 h-5 text-yellow-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-gray-500 font-medium">Address</p>
+                                                    <p className="text-gray-800">{userData.address || "No address provided"}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-start">
+                                                <div className="bg-red-100 p-2 rounded-lg mr-3">
+                                                    <svg className="w-5 h-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm text-gray-500 font-medium">Description</p>
+                                                    <p className="text-gray-800">{userData.description || "No description provided"}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    ) : (
-                        <p className="text-gray-500 text-center text-lg">
-                            No user data available.
-                        </p>
                     )}
 
                     {/* Subscriptions Section */}
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                            Your Subscriptions
-                        </h2>
-                        {loadingSubscriptions ? (
-                            <div>Loading subscriptions...</div>
-                        ) : errorSubscriptions ? (
-                            <div className="text-red-500">{errorSubscriptions}</div>
+                    <div className="mb-10">
+                        <div className="flex items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-800">Your Subscriptions</h2>
+                            <div className="ml-4 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                {subscriptions.length} {subscriptions.length === 1 ? 'subscription' : 'subscriptions'}
+                            </div>
+                        </div>
+                        
+                        {errorSubscriptions ? (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+                                {errorSubscriptions}
+                            </div>
                         ) : subscriptions.length > 0 ? (
-                            <ul className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {subscriptions.map((subscription) => (
-                                    <li
+                                    <div
                                         key={subscription._id}
-                                        className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 transition-transform transform hover:scale-105"
+                                        className="bg-white rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1"
                                     >
-                                        <div className="flex justify-between">
-                                        <p className="text-gray-900 font-semibold text-xl mb-2">
-                                            {subscription.mess
-                                                ? subscription.user.username
-                                                : subscription.user.username}
-                                        </p>
-                                        <p className="text-gray-600 font-normal text-base mb-2">
-                                            {subscription.mess
-                                                ? subscription.user.contactNo
-                                                : subscription.user.contactNo}
-                                        </p>
-                                        </div>
-                                        <p className="text-gray-600 text-sm">
-                                            <strong>Start Date:</strong>{" "}
-                                            {new Date(subscription.startDate).toLocaleDateString()}
-                                        </p>
-                                        <p className="text-gray-600 text-sm mt-1">
-                                            <strong>End Date:</strong>{" "}
-                                            {new Date(subscription.expiry).toLocaleDateString()}
-                                        </p>
-                                        <p
-                                            className={`mt-4 font-semibold text-lg ${
-                                                subscription.isActive
-                                                    ? "text-green-600"
-                                                    : "text-green-600"
-                                            }`}
+                                        <div className={`p-2 text-center text-white font-medium 
+                                            ${subscription.status === "Active" 
+                                                ? "bg-gradient-to-r from-green-400 to-green-600" 
+                                                : "bg-gradient-to-r from-gray-400 to-gray-600"}`}
                                         >
                                             {subscription.status}
-                                        </p>
-                                    </li>
+                                        </div>
+                                        
+                                        <div className="p-5">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h3 className="text-lg font-semibold text-gray-800">
+                                                    {subscription.user.username}
+                                                </h3>
+                                                <div className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">
+                                                    {subscription.user.contactNo}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="space-y-3 mb-4">
+                                                <div className="flex items-center text-gray-600">
+                                                    <CalendarIcon className="w-4 h-4 mr-2 text-green-500" />
+                                                    <span className="text-sm">Start: {new Date(subscription.startDate).toLocaleDateString('en-US', { 
+                                                        year: 'numeric', 
+                                                        month: 'short', 
+                                                        day: 'numeric' 
+                                                    })}</span>
+                                                </div>
+                                                
+                                                <div className="flex items-center text-gray-600">
+                                                    <CalendarIcon className="w-4 h-4 mr-2 text-red-500" />
+                                                    <span className="text-sm">End: {new Date(subscription.expiry).toLocaleDateString('en-US', { 
+                                                        year: 'numeric', 
+                                                        month: 'short', 
+                                                        day: 'numeric' 
+                                                    })}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="mt-4">
+                                                <button
+                                                    onClick={() => router.push(subscription?._id)}
+                                                    className="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium shadow-md hover:from-blue-600 hover:to-purple-700 transition-colors flex items-center justify-center"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                    </svg>
+                                                    Extend Subscription
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         ) : (
-                            <p className="text-gray-500 text-center text-lg">
-                                No subscriptions found.
-                            </p>
+                            <div className="bg-white rounded-xl shadow p-8 text-center">
+                                <div className="bg-blue-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                                    <svg className="w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2">No Subscriptions Found</h3>
+                                <p className="text-gray-600 mb-6">You don't have any active subscriptions at the moment.</p>
+                                <button 
+                                    onClick={() => router.push('/browse')}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md"
+                                >
+                                    Browse Available Subscriptions
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>

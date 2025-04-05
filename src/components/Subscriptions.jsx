@@ -22,7 +22,7 @@ function Subscriptions() {
           return;
         }
     
-        setSubscriptionLoading(true); // Start loading
+        setSubscriptionLoading(true);
     
         try {
           const pathname = window.location.pathname;
@@ -57,7 +57,7 @@ function Subscriptions() {
             variant: "destructive",
           });
         } finally {
-          setSubscriptionLoading(false); // End loading
+          setSubscriptionLoading(false); 
         }
       }
     

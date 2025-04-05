@@ -2,19 +2,19 @@
 
 import { useState } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';  // Use from 'next/navigation' in App Router
-import { Button } from '@/components/ui/button';  // ShadCN button component
-import { Input } from '@/components/ui/input';// ShadCN input component
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';  // Card components
-import { CheckCircle, AlertCircle } from 'lucide-react';  // Icons from lucide-react
-import { Loader2 } from 'lucide-react';  // Loader icon for submission state
+import { useRouter } from 'next/navigation';  
+import { Button } from '@/components/ui/button'; 
+import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'; 
+import { CheckCircle, AlertCircle } from 'lucide-react';  
+import { Loader2 } from 'lucide-react'; 
 
 const SetDailyMenu = () => {
-  const [menu, setMenu] = useState('');  // Menu input state
-  const [errorMessage, setErrorMessage] = useState('');  // Error message state
-  const [successMessage, setSuccessMessage] = useState('');  // Success message state
-  const [loading, setLoading] = useState(false);  // Loading state
-  const router = useRouter();  // Correct useRouter hook for App Router
+  const [menu, setMenu] = useState(''); 
+  const [errorMessage, setErrorMessage] = useState('');  
+  const [successMessage, setSuccessMessage] = useState(''); 
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();  
 
   const handleMenuChange = (e) => {
     setMenu(e.target.value);
@@ -22,7 +22,7 @@ const SetDailyMenu = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);  // Start loading
+    setLoading(true);  
 
     try {
       const response = await axios.post('/api/dailymenu/dailymenu-creation', 

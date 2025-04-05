@@ -7,7 +7,7 @@ export async function POST(request) {
     try {
         await dbConnect();
         const { id, type } = await getDataFromToken(request);
-        const { sales, note } = await request.json(); // Expecting { sales: [...], note: "..." }
+        const { sales, note,name } = await request.json(); // Expecting { sales: [...], note: "..." }
 
         if (type === "user") {
             return NextResponse.json(
@@ -52,6 +52,7 @@ export async function POST(request) {
         // Insert sales data into the database
         const salesData = await SalesAnalysis.create({
             mess: id,
+            name,
             sales: sales, // Save all sales as an array inside a single document
             note,
             date: new Date(),

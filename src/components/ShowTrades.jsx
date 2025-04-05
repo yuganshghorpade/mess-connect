@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, PlusCircle } from "lucide-react";
 import Link from "next/link";
-import BookTrade from "./booktrade"; // Import BookTrade component
+import BookTrade from "./booktrade";
 
 function ShowTrades() {
   const [trades, setTrades] = useState([]);
@@ -17,7 +17,7 @@ function ShowTrades() {
         const res = await axios.get("/api/trade/fetch-trades", {
           withCredentials: true,
         });
-        // Filter trades to show only those with status "Pending" (case-sensitive check)
+       
         setTrades(res.data.trades.filter(trade => trade.status === "Pending"));
       } catch (err) {
         setError("Failed to fetch trades");

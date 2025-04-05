@@ -8,6 +8,7 @@ const salesAnalysis = new mongoose.Schema({
     },
     sales:[{
         price : Number,
+        name : String,
         quantity : {
             type: Number,
             default: 0

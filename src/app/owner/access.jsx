@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 
 function Access() {
 
-    const [location, setLocation] = useState({ latitude: null, longitude: null });
+  const [location, setLocation] = useState({ latitude: null, longitude: null });
   const [error, setError] = useState(null);
   const [accuracy, setAccuracy] = useState(null); // Added to show accuracy
 

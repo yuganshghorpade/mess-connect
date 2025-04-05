@@ -12,7 +12,7 @@ function ReviewRatings() {
     const { toast } = useToast();
     
       const [ratings, setRatings] = useState(null); 
-      const [ratingsError, setRatingsError] = useState(""); // **Added this line**
+      const [ratingsError, setRatingsError] = useState(""); 
       const [reviewData, setReviewData] = useState({
         cleanliness: 0,
         foodQuality: 0,
@@ -30,17 +30,17 @@ function ReviewRatings() {
         }));
       };
     
-      // Fetch user data and mess ratings
+    
       useEffect(() => {
         const fetchData = async () => {
           setLoading(true);
-          setError(""); // Reset user data error
-          setRatingsError(""); // Reset ratings error
+          setError(""); 
+          setRatingsError(""); 
           try {
             const pathname = window.location.pathname;
             const id = pathname.split("/").pop();
     
-            // Fetch user data
+           
             const userResponse = await axios.get(`/api/user/fetching-user-details?messid=${id}`, { // Added backticks
               withCredentials: true,
             });
@@ -48,22 +48,21 @@ function ReviewRatings() {
               setUserData(userResponse.data.response);
             } else {
               setError(userResponse.data.message || "Failed to load user data.");
-              return; // Stop further execution if user data fails
+              return; 
             }
           
-            // Fetch mess ratings
+            
             const ratingsResponse = await axios.get(`/api/ratings/fetch-ratings?messId=${id}`); // Added backticks
             if (ratingsResponse.data.success) {
               const ratingsData = ratingsResponse.data.messRatings || ratingsResponse.data.response;
               if (Array.isArray(ratingsData) && ratingsData.length > 0) {
                 setRatings(ratingsData[0]);
               } else {
-                setRatings(null); // No ratings available
+                setRatings(null); 
               }
             } else {
-              setRatings(null); // Failed to fetch ratings
-              // Optionally, you can set a ratings error if needed
-              // setRatingsError(ratingsResponse.data.message || "Failed to load mess ratings.");
+              setRatings(null); 
+             
             }
               
           } catch (err) {
@@ -98,7 +97,7 @@ function ReviewRatings() {
               title: "Review Submitted",
               description: "Thank you for your feedback!",
             });
-            // Optionally reset the form
+           
             setReviewData({
               cleanliness: 0,
               foodQuality: 0,

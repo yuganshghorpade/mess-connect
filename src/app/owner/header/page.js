@@ -1,12 +1,13 @@
+'use client'
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";  // Correct router import
+import { useRouter } from "next/navigation";  
 import Link from "next/link";
-import axios from 'axios';  // Add axios import
+import axios from 'axios'; 
 import { Button } from "@/components/ui/button";
-import { FaUserCircle } from "react-icons/fa"; // If you're using icons, make sure to import them
+import { FaUserCircle } from "react-icons/fa"; 
 
 export default function MyComponent() {
-    const router = useRouter();  // Initialize the router here
+    const router = useRouter(); 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
@@ -19,7 +20,7 @@ export default function MyComponent() {
             const response = await axios.post("/api/auth/logout", {}, {
                 withCredentials: true
             });
-            router.replace("/login");  // Use router to redirect after logout
+            router.replace("/login"); 
             console.log(response);
         } catch (error) {
             console.error(error);
@@ -70,6 +71,12 @@ export default function MyComponent() {
                                 <Link href="/owner/dailyMenu">
                                     <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Daily Menu</span>
                                 </Link>
+                                <Link href="/owner/anal">
+                            <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">My Analysis</span>
+                        </Link>
+                        <Link href="/owner/viewanalysis">
+                            <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">View Analysis</span>
+                        </Link>
                                 <Link href="/owner/profile">
                                     <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300 px-5">Profile</span>
                                 </Link>
@@ -88,6 +95,9 @@ export default function MyComponent() {
                         </Link>
                         <Link href="/owner/dailyMenu">
                             <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Deals</span>
+                        </Link>
+                        <Link href="/owner/profile">
+                            <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Profile</span>
                         </Link>
                         <Link href="/owner/profile">
                             <span className="text-white text-lg hover:text-gray-200 cursor-pointer transition-colors duration-300">Profile</span>
