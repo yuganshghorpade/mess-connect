@@ -17,7 +17,9 @@ export default function Profile() {
     const [location, setLocation] = useState(null);
     const [locationError, setLocationError] = useState("");
     const [loadingDetails, setLoadingDetails] = useState(null);
+    const [requests, setRequests] = useState([]);
     const router = useRouter();
+    const [responseMsg, setResponseMsg] = useState("");
 
     const setMessLocation = async () => {
         setLoadingDetails("location");
@@ -68,7 +70,7 @@ export default function Profile() {
                 const response = await axios.get("/api/user/fetching-user-details", {
                     withCredentials: true,
                 });
-                console.log(response);
+                // console.log(response);
                 if (response.data.success) {
                     setUserData(response.data.response);
                 } else {
@@ -89,7 +91,7 @@ export default function Profile() {
                 });
                 console.log(response);
                 if (response.data.success) {
-                    setUserData(response.data.response);
+                    setRequests(response.data.extension_requests);
                 } else {
                     setErrorUser(response.data.message || "Failed to load requests data.");
                 }
@@ -100,13 +102,15 @@ export default function Profile() {
                 setLoadingUser(false);
             }
         };
+         
+        
 
         const fetchSubscriptions = async () => {
             try {
                 const response = await axios.get("/api/subscriptions/fetch-subscriptions", {
                     withCredentials: true
                 });
-                console.log(response);
+                // console.log(response);
                 if (response.data.success) {
                     setSubscriptions(response.data.response);
                 } else {
@@ -124,6 +128,8 @@ export default function Profile() {
         fetchSubscriptions();
         fetchRequests();
     }, []);
+
+    
 
     if (loadingUser || loadingSubscriptions) {
         return (
@@ -286,7 +292,23 @@ export default function Profile() {
                             </div>
                         </div>
                     )}
-
+            <div className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Extension Requests</h2>
+            {!requests || requests.length === 0 ? (
+                <p className="text-gray-600">No extension requests found.</p>
+            ) : (
+                <ul className="space-y-4">
+                    {requests.map((req) => (
+                        <li key={req._id} className="p-4 border rounded-lg shadow-sm">
+                            <p><strong>Request ID:</strong> {req._id}</p>
+                            <p><strong>Requested Days:</strong> {req.days}</p>
+                            <p><strong>Status:</strong> <span className={`font-semibold ${req.status === "Pending" ? "text-yellow-600" : "text-green-600"}`}>{req.status}</span></p>
+                            {/* <p><strong>Created At:</strong> {new Date(req.createdAt).toLocaleString()}</p> */}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
                     {/* Subscriptions Section */}
                     <div className="mb-10">
                         <div className="flex items-center mb-6">
@@ -345,7 +367,7 @@ export default function Profile() {
                                                 </div>
                                             </div>
                                             
-                                            <div className="mt-4">
+                                            {/* <div className="mt-4">
                                                 <button
                                                     onClick={() => router.push(subscription?._id)}
                                                     className="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium shadow-md hover:from-blue-600 hover:to-purple-700 transition-colors flex items-center justify-center"
@@ -355,7 +377,7 @@ export default function Profile() {
                                                     </svg>
                                                     Extend Subscription
                                                 </button>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
                                 ))}
