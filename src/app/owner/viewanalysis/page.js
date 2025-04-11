@@ -11,13 +11,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
 
 const SalesAnalysisDashboard = () => {
   const [salesData, setSalesData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
+  
+
+  const [dateRange, setDateRange] = useState({
+    from: new Date(new Date().setDate(new Date().getDate() - 30)), 
+    to: new Date()
+  });
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -29,6 +38,7 @@ const SalesAnalysisDashboard = () => {
         
         if (response.data.success) {
           setSalesData(response.data.data);
+          filterDataByDateRange(response.data.data, dateRange);
         } else {
           setError(response.data.message);
         }
@@ -42,37 +52,57 @@ const SalesAnalysisDashboard = () => {
     fetchSalesData();
   }, []);
 
-  // Data processing functions
-  const processMonthlyRevenue = () => {
-    if (!salesData.length) return [];
+  // Filter data when date range changes
+  useEffect(() => {
+    filterDataByDateRange(salesData, dateRange);
+  }, [dateRange, salesData]);
+
+  // Function to filter data by date range
+  const filterDataByDateRange = (data, range) => {
+    if (!data.length) return;
     
-    const monthlyData = {};
+    const { from, to } = range;
+    const filteredData = data.filter(sale => {
+      const saleDate = new Date(sale.createdAt);
+      return saleDate >= from && saleDate <= to;
+    });
     
-    salesData.forEach(sale => {
+    setFilteredData(filteredData);
+  };
+
+  // Data processing functions for daily data
+  const processDailyRevenue = () => {
+    if (!filteredData.length) return [];
+    
+    const dailyData = {};
+    
+    filteredData.forEach(sale => {
       const date = new Date(sale.createdAt);
-      const monthYear = `${date.toLocaleString('default', { month: 'short' })}-${date.getFullYear()}`;
+      const dateStr = format(date, 'yyyy-MM-dd');
       
-      if (!monthlyData[monthYear]) {
-        monthlyData[monthYear] = {
-          month: monthYear,
+      if (!dailyData[dateStr]) {
+        dailyData[dateStr] = {
+          date: dateStr,
+          displayDate: format(date, 'dd MMM'),
           revenue: 0,
           transactions: 0,
         };
       }
       
-      monthlyData[monthYear].revenue += sale.totalAmount;
-      monthlyData[monthYear].transactions += 1;
+      dailyData[dateStr].revenue += sale.totalAmount;
+      dailyData[dateStr].transactions += 1;
     });
     
-    return Object.values(monthlyData);
+    // Sort by date
+    return Object.values(dailyData).sort((a, b) => new Date(a.date) - new Date(b.date));
   };
 
   const processCategoryDistribution = () => {
-    if (!Array.isArray(salesData) || salesData.length === 0) return [];
+    if (!Array.isArray(filteredData) || filteredData.length === 0) return [];
 
     const categoryData = {};
 
-    salesData.forEach(entry => {
+    filteredData.forEach(entry => {
       const itemsArray = Array.isArray(entry.items) ? entry.items : 
                         (Array.isArray(entry.sales) ? entry.sales : []);
                         
@@ -99,11 +129,11 @@ const SalesAnalysisDashboard = () => {
   };
 
   const processTopSellingItems = () => {
-    if (!salesData.length) return [];
+    if (!filteredData.length) return [];
   
     const itemsData = {};
   
-    salesData.forEach(sale => {
+    filteredData.forEach(sale => {
       
       const itemsArray = Array.isArray(sale.items) ? sale.items : 
                          (Array.isArray(sale.sales) ? sale.sales : []);
@@ -132,11 +162,11 @@ const SalesAnalysisDashboard = () => {
   };
   
   const getAverageOrderValue = () => {
-    if (!salesData.length) return 0;
+    if (!filteredData.length) return 0;
     
     let totalRevenue = 0;
     
-    salesData.forEach(sale => {
+    filteredData.forEach(sale => {
       
       if (typeof sale.totalAmount === 'number') {
         totalRevenue += sale.totalAmount;
@@ -147,15 +177,15 @@ const SalesAnalysisDashboard = () => {
       }
     });
     
-    return (totalRevenue / salesData.length).toFixed(2);
+    return (totalRevenue / filteredData.length).toFixed(2);
   };
 
   const getTotalRevenue = () => {
-    if (!salesData.length) return 0;
+    if (!filteredData.length) return 0;
     
     let totalRevenue = 0;
     
-    salesData.forEach(sale => {
+    filteredData.forEach(sale => {
       
       if (typeof sale.totalAmount === 'number') {
         totalRevenue += sale.totalAmount;
@@ -170,23 +200,72 @@ const SalesAnalysisDashboard = () => {
   };
 
   const getCustomerCount = () => {
-    if (!salesData.length) return 0;
+    if (!filteredData.length) return 0;
     
     const uniqueCustomers = new Set();
-    salesData.forEach(sale => {
+    filteredData.forEach(sale => {
       if (sale.customerId) {
         uniqueCustomers.add(sale.customerId);
       } else if (sale.userId) {
-       
         uniqueCustomers.add(sale.userId);
       } else if (sale.customer && sale.customer.id) {
-        
         uniqueCustomers.add(sale.customer.id);
       }
     });
     
-   
-    return uniqueCustomers.size > 0 ? uniqueCustomers.size : salesData.length;
+    return uniqueCustomers.size > 0 ? uniqueCustomers.size : filteredData.length;
+  };
+
+  // Custom date range picker component
+  const DateRangeSelector = () => {
+    const [fromDate, setFromDate] = useState(dateRange.from);
+    const [toDate, setToDate] = useState(dateRange.to);
+
+    const handleApply = () => {
+      setDateRange({ from: fromDate, to: toDate });
+    };
+
+    return (
+      <div className="flex flex-col md:flex-row gap-4 mb-6 p-4 bg-muted rounded-lg">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div>
+            <label className="text-sm font-medium mb-1 block">From Date</label>
+            <input 
+              type="date" 
+              className="border rounded p-2"
+              value={format(fromDate, 'yyyy-MM-dd')}
+              onChange={(e) => setFromDate(new Date(e.target.value))}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-1 block">To Date</label>
+            <input 
+              type="date" 
+              className="border rounded p-2"
+              value={format(toDate, 'yyyy-MM-dd')}
+              onChange={(e) => setToDate(new Date(e.target.value))}
+            />
+          </div>
+        </div>
+        <div className="flex items-end">
+          <Button onClick={handleApply} className="bg-primary text-white">
+            Apply Filter
+          </Button>
+        </div>
+        <div className="flex items-end">
+          <Button variant="outline" onClick={() => {
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            setFromDate(thirtyDaysAgo);
+            setToDate(today);
+            setDateRange({ from: thirtyDaysAgo, to: today });
+          }}>
+            Last 30 Days
+          </Button>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -215,13 +294,23 @@ const SalesAnalysisDashboard = () => {
     );
   }
 
-  const monthlyRevenueData = processMonthlyRevenue();
+  const dailyRevenueData = processDailyRevenue();
   const categoryDistributionData = processCategoryDistribution();
   const topSellingItemsData = processTopSellingItems();
   
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Mess Sales Analysis Dashboard</h1>
+      
+      {/* Date Range Selector */}
+      <DateRangeSelector />
+      
+      {/* Date range display */}
+      <div className="mb-6">
+        <p className="text-lg font-medium">
+          Analyzing data from {format(dateRange.from, 'dd MMM yyyy')} to {format(dateRange.to, 'dd MMM yyyy')}
+        </p>
+      </div>
       
       {/* Key metrics section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -265,13 +354,13 @@ const SalesAnalysisDashboard = () => {
         <TabsContent value="overview" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Monthly Revenue Trend</CardTitle>
+              <CardTitle>Daily Revenue Trend</CardTitle>
             </CardHeader>
             <CardContent className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyRevenueData}>
+                <LineChart data={dailyRevenueData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="displayDate" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
@@ -334,13 +423,13 @@ const SalesAnalysisDashboard = () => {
         <TabsContent value="revenue" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Monthly Revenue Breakdown</CardTitle>
+              <CardTitle>Daily Revenue Breakdown</CardTitle>
             </CardHeader>
             <CardContent className="h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyRevenueData}>
+                <BarChart data={dailyRevenueData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="displayDate" />
                   <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
                   <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
                   <Tooltip />
