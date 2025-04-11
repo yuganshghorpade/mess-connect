@@ -64,7 +64,7 @@ export default function Header() {
             <div className="flex items-center justify-between h-16 px-4 md:px-10">
                 <div className="flex items-center flex-1">
                     <div className="text-white text-3xl md:text-4xl font-extrabold drop-shadow-lg tracking-wide mr-6">
-                        Taste <span className="text-yellow-400">Buddies</span>
+                        Mess <span className="text-yellow-300">Connect</span>
                     </div>
 
                     <form onSubmit={handleSearch} className="flex-1 max-w-[400px] w-full">

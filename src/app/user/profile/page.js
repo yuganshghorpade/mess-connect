@@ -1,26 +1,19 @@
-'use client';
+"use client";
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
 import Header from "../header/page";
 import Footer from "@/components/ui/footer";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import { 
-  UserCircle, 
-  Layers 
-} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserCircle, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -29,7 +22,26 @@ export default function ProfilePage() {
     const [subscriptions, setSubscriptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [days, setDays] = useState(0);
     const router = useRouter();
+
+    const requestExtension = async (id) => {
+        try {
+            const response = await axios.post(
+                `/api/subscriptions/extend-subscription-request?subscriptionId=${id}`,
+                {days},
+                { withCredentials: true }
+            );
+            if (!response.data.success) {
+                setError(
+                    response.data.message || "Failed to request extension."
+                );
+            }
+        } catch (error) {
+            console.log(error)
+            setError("Failed to send request. Error: " + error.message);
+        }
+    }
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -41,7 +53,9 @@ export default function ProfilePage() {
                 if (response.data.success) {
                     setUserData(response.data.response);
                 } else {
-                    setError(response.data.message || "Failed to load user data.");
+                    setError(
+                        response.data.message || "Failed to load user data."
+                    );
                 }
             } catch (err) {
                 console.error("Error fetching user data:", err);
@@ -60,7 +74,10 @@ export default function ProfilePage() {
                 if (response.data.success) {
                     setSubscriptions(response.data.response);
                 } else {
-                    console.error("Failed to load subscriptions:", response.data.message);
+                    console.error(
+                        "Failed to load subscriptions:",
+                        response.data.message
+                    );
                 }
             } catch (error) {
                 console.error("Error fetching subscriptions:", error);
@@ -88,9 +105,7 @@ export default function ProfilePage() {
                     <CardHeader>
                         <CardTitle className="text-red-600">Error</CardTitle>
                     </CardHeader>
-                    <CardContent className="text-red-500">
-                        {error}
-                    </CardContent>
+                    <CardContent className="text-red-500">{error}</CardContent>
                 </Card>
             </div>
         );
@@ -102,11 +117,17 @@ export default function ProfilePage() {
             <main className="flex-grow container mx-auto px-4 py-12 sm:px-8 lg:px-16">
                 <Tabs defaultValue="profile" className="space-y-4">
                     <TabsList className="grid w-full grid-cols-2 bg-white shadow-md rounded-xl">
-                        <TabsTrigger value="profile" className="flex items-center gap-2">
+                        <TabsTrigger
+                            value="profile"
+                            className="flex items-center gap-2"
+                        >
                             <UserCircle className="w-5 h-5" />
                             Profile
                         </TabsTrigger>
-                        <TabsTrigger value="subscriptions" className="flex items-center gap-2">
+                        <TabsTrigger
+                            value="subscriptions"
+                            className="flex items-center gap-2"
+                        >
                             <Layers className="w-5 h-5" />
                             Subscriptions
                         </TabsTrigger>
@@ -119,19 +140,24 @@ export default function ProfilePage() {
                                     {/* Profile Picture and Basic Info */}
                                     <div className="flex flex-col items-center text-center">
                                         <div className="w-40 h-40 rounded-full border-4 border-blue-200 shadow-lg overflow-hidden">
-                                            <Image 
-                                                src="/default-avatar.png" 
-                                                alt="User Profile" 
-                                                width={160} 
-                                                height={160} 
+                                            <Image
+                                                src="/photo.png"
+                                                alt="User Profile"
+                                                width={160}
+                                                height={160}
                                                 className="object-cover w-full h-full"
                                             />
                                         </div>
                                         <h2 className="text-2xl font-bold text-gray-800 mt-4">
                                             {userData.username}
                                         </h2>
-                                        <p className="text-gray-600">{userData.email}</p>
-                                        <Button variant="outline" className="mt-4">
+                                        <p className="text-gray-600">
+                                            {userData.email}
+                                        </p>
+                                        <Button
+                                            variant="outline"
+                                            className="mt-4"
+                                        >
                                             Edit Profile
                                         </Button>
                                     </div>
@@ -146,13 +172,22 @@ export default function ProfilePage() {
                                             </CardHeader>
                                             <CardContent className="grid md:grid-cols-2 gap-4">
                                                 <div>
-                                                    <p className="text-gray-600">Contact Number</p>
-                                                    <p className="font-semibold">{userData.contactNo || 'Not provided'}</p>
+                                                    <p className="text-gray-600">
+                                                        Contact Number
+                                                    </p>
+                                                    <p className="font-semibold">
+                                                        {userData.contactNo ||
+                                                            "Not provided"}
+                                                    </p>
                                                 </div>
                                                 {userData.type === "mess" && (
                                                     <div>
-                                                        <p className="text-gray-600">Mess Name</p>
-                                                        <p className="font-semibold">{userData.messName}</p>
+                                                        <p className="text-gray-600">
+                                                            Mess Name
+                                                        </p>
+                                                        <p className="font-semibold">
+                                                            {userData.messName}
+                                                        </p>
                                                     </div>
                                                 )}
                                             </CardContent>
@@ -175,38 +210,87 @@ export default function ProfilePage() {
                                 {subscriptions.length > 0 ? (
                                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {subscriptions.map((subscription) => (
-                                            <Card 
-                                                key={subscription._id} 
+                                            <Card
+                                                key={subscription._id}
                                                 className="bg-blue-50/50 hover:shadow-lg transition-all duration-300"
                                             >
                                                 <CardHeader>
                                                     <CardTitle className="text-xl">
-                                                        {subscription.mess 
-                                                            ? subscription.mess.name 
-                                                            : subscription.user.username}
+                                                        {subscription.mess
+                                                            ? subscription.mess
+                                                                  .name
+                                                            : subscription.user
+                                                                  .username}
                                                     </CardTitle>
                                                 </CardHeader>
                                                 <CardContent className="space-y-2">
                                                     <div className="flex justify-between">
-                                                        <span className="text-gray-600">Start Date</span>
+                                                        <span className="text-gray-600">
+                                                            Start Date
+                                                        </span>
                                                         <span className="font-semibold">
-                                                            {new Date(subscription.startDate).toLocaleDateString()}
+                                                            {new Date(
+                                                                subscription.startDate
+                                                            ).toLocaleDateString()}
                                                         </span>
                                                     </div>
                                                     <div className="flex justify-between">
-                                                        <span className="text-gray-600">End Date</span>
+                                                        <span className="text-gray-600">
+                                                            End Date
+                                                        </span>
                                                         <span className="font-semibold">
-                                                            {new Date(subscription.expiry).toLocaleDateString()}
+                                                            {new Date(
+                                                                subscription.expiry
+                                                            ).toLocaleDateString()}
                                                         </span>
                                                     </div>
                                                     <div className="flex justify-between items-center mt-2">
-                                                        <Badge 
-                                                            variant={subscription.status === "Active" ? "default" : "secondary"}
+                                                        <Badge
+                                                            variant={
+                                                                subscription.status ===
+                                                                "Active"
+                                                                    ? "default"
+                                                                    : "secondary"
+                                                            }
                                                         >
-                                                            {subscription.status}
+                                                            {
+                                                                subscription.status
+                                                            }
                                                         </Badge>
+                                                        <Popover>
+                                                            <PopoverTrigger
+                                                                asChild
+                                                            >
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="w-3/6 mt-2"
+                                                                >
+                                                                    Request
+                                                                    Extension
+                                                                </Button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-64 space-y-3">
+                                                                <Input
+                                                                    value = {days}
+                                                                    onChange={(e) => {
+                                                                        setDays(e.target.value)
+                                                                    }}
+                                                                    type="number"
+                                                                    placeholder="Enter number of days"
+                                                                />
+                                                                <Button className="w-full"
+                                                                onClick={() => requestExtension(subscription._id)}
+                                                                >
+                                                                    Submit
+                                                                    Request
+                                                                </Button>
+                                                            </PopoverContent>
+                                                        </Popover>
+
                                                         <span className="text-blue-600 font-semibold">
-                                                            {subscription.mealType}
+                                                            {
+                                                                subscription.mealType
+                                                            }
                                                         </span>
                                                     </div>
                                                 </CardContent>

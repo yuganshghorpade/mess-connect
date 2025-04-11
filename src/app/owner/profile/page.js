@@ -82,6 +82,25 @@ export default function Profile() {
             }
         };
 
+        const fetchRequests = async () => {
+            try {
+                const response = await axios.get("/api/subscriptions/fetch-extension-requests", {
+                    withCredentials: true,
+                });
+                console.log(response);
+                if (response.data.success) {
+                    setUserData(response.data.response);
+                } else {
+                    setErrorUser(response.data.message || "Failed to load requests data.");
+                }
+            } catch (err) {
+                console.error("Error fetching REQUEST data:", err);
+                setErrorUser("Failed to load user data. Error: " + err.message);
+            } finally {
+                setLoadingUser(false);
+            }
+        };
+
         const fetchSubscriptions = async () => {
             try {
                 const response = await axios.get("/api/subscriptions/fetch-subscriptions", {
@@ -103,6 +122,7 @@ export default function Profile() {
 
         fetchUserData();
         fetchSubscriptions();
+        fetchRequests();
     }, []);
 
     if (loadingUser || loadingSubscriptions) {

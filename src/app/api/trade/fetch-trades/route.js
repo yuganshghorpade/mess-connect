@@ -7,7 +7,7 @@ export async function GET(request) {
     try {
         await dbConnect();
         const {id, type} = await getDataFromToken(request)
-        if(type=="trader"){
+        if(type=="user"){
             const startOfDay = new Date();
             startOfDay.setUTCHours(0, 0, 0, 0);
         
@@ -20,6 +20,7 @@ export async function GET(request) {
             })
             .populate("owner mess trader")
             .sort({createdAt : -1})
+            console.log(trades);
             return NextResponse.json({
                 success: true,
                 message:"Trades fetched successfully",
@@ -29,15 +30,12 @@ export async function GET(request) {
             })
         }
         else{
-            const trades = await Trade.find({ owner: id })
-            .populate("owner mess trader")
-            .sort({createdAt : -1})
             return NextResponse.json({
-                success: true,
-                message:"Trades fetched successfully",
+                success: false,
+                message:"Bad Request",
                 trades
             }, {
-                status: 200
+                status: 400
             })
         }
     } catch (error) {

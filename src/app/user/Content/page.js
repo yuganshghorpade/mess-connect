@@ -52,9 +52,9 @@ export default function Content() {
   return (
     <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div>
-        <h2 className="text-center text-4xl font-bold text-gray-900 mb-8">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 leading-tight text-center mb-8">
           Local Messes Near You
-        </h2>
+        </h1>
         
         {loading ? (
           <p className="text-center text-gray-600">Loading local messes...</p>

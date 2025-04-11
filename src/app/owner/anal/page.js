@@ -103,10 +103,6 @@ export default function SalesForm() {
     };
 
     const handleSubmit = async () => {
-        if (!name.trim()) {
-            showNotification("Please enter a mess name", true);
-            return;
-        }
 
         if (plates.length === 0) {
             showNotification("Please add at least one menu item", true);
