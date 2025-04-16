@@ -5,7 +5,56 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import Header from "../header/page";
 import Footer from "@/components/ui/footer";
+import { Button } from "@/components/ui/button";
 import { MapPinIcon, UserCircleIcon, CalendarIcon, CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
+import { toast } from "sonner";
+
+const HandleExtensionRequest = ({ requestId }) => {
+    const [loading, setLoading] = useState(false);
+
+    const handleDecision = async (decision) => {
+        if (!requestId) {
+            toast.error("Invalid request ID");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await axios.patch(
+                `/api/subscriptions/extend-subscription-decision?requestId=${requestId}&decision=${decision}`
+            );
+            if (response.data.success) {
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            console.error("Error in request:", error);
+            toast.error("Something went wrong while handling the request.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="flex gap-4">
+            <Button
+                disabled={loading}
+                onClick={() => handleDecision("Accepted")}
+                className="bg-green-600 hover:bg-green-700"
+            >
+                Accept
+            </Button>
+            <Button
+                disabled={loading}
+                onClick={() => handleDecision("Rejected")}
+                className="bg-red-600 hover:bg-red-700"
+            >
+                Reject
+            </Button>
+        </div>
+    );
+};
 
 export default function Profile() {
     const [userData, setUserData] = useState(null);
@@ -48,7 +97,7 @@ export default function Profile() {
                 setLocationError(error.message);
                 setLoadingDetails(null);
             };
-            
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
                     enableHighAccuracy: true,
@@ -102,8 +151,8 @@ export default function Profile() {
                 setLoadingUser(false);
             }
         };
-         
-        
+
+
 
         const fetchSubscriptions = async () => {
             try {
@@ -129,7 +178,8 @@ export default function Profile() {
         fetchRequests();
     }, []);
 
-    
+
+
 
     if (loadingUser || loadingSubscriptions) {
         return (
@@ -147,7 +197,7 @@ export default function Profile() {
                 <div className="text-red-600 text-xl font-semibold text-center max-w-md">
                     {errorUser}
                 </div>
-                <button 
+                <button
                     onClick={() => window.location.reload()}
                     className="mt-6 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                 >
@@ -167,13 +217,13 @@ export default function Profile() {
                             My Profile
                             <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-blue-500 rounded-full"></span>
                         </h1>
-                        
+
                         {userData && userData.type === "mess" && (
                             <button
                                 className={`mt-4 md:mt-0 flex items-center px-4 py-2 rounded-lg shadow-md text-white font-medium transition-all 
-                                ${loadingDetails === "location" 
-                                    ? "bg-gray-400 cursor-not-allowed" 
-                                    : "bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 hover:shadow-lg"}`}
+                                ${loadingDetails === "location"
+                                        ? "bg-gray-400 cursor-not-allowed"
+                                        : "bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 hover:shadow-lg"}`}
                                 onClick={setMessLocation}
                                 disabled={loadingDetails === "location"}
                             >
@@ -213,7 +263,7 @@ export default function Profile() {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="p-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-4">
@@ -228,7 +278,7 @@ export default function Profile() {
                                                     <p className="text-gray-800">{userData.email}</p>
                                                 </div>
                                             </div>
-                                            
+
                                             <div className="flex items-start">
                                                 <div className="bg-purple-100 p-2 rounded-lg mr-3">
                                                     <svg className="w-5 h-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -263,7 +313,7 @@ export default function Profile() {
                                                 </div>
                                             )}
                                         </div>
-                                        
+
                                         <div className="space-y-4">
                                             <div className="flex items-start">
                                                 <div className="bg-yellow-100 p-2 rounded-lg mr-3">
@@ -274,7 +324,7 @@ export default function Profile() {
                                                     <p className="text-gray-800">{userData.address || "No address provided"}</p>
                                                 </div>
                                             </div>
-                                            
+
                                             <div className="flex items-start">
                                                 <div className="bg-red-100 p-2 rounded-lg mr-3">
                                                     <svg className="w-5 h-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -292,23 +342,65 @@ export default function Profile() {
                             </div>
                         </div>
                     )}
-            <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Extension Requests</h2>
-            {!requests || requests.length === 0 ? (
-                <p className="text-gray-600">No extension requests found.</p>
-            ) : (
-                <ul className="space-y-4">
-                    {requests.map((req) => (
-                        <li key={req._id} className="p-4 border rounded-lg shadow-sm">
-                            <p><strong>Request ID:</strong> {req._id}</p>
-                            <p><strong>Requested Days:</strong> {req.days}</p>
-                            <p><strong>Status:</strong> <span className={`font-semibold ${req.status === "Pending" ? "text-yellow-600" : "text-green-600"}`}>{req.status}</span></p>
-                            {/* <p><strong>Created At:</strong> {new Date(req.createdAt).toLocaleString()}</p> */}
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
+
+
+                    <div className="p-6 bg-white rounded-xl shadow-lg mb-10">
+                        <h2 className="text-2xl font-bold mb-4">Extension Requests</h2>
+                        {!requests || requests.length === 0 ? (
+                            <p className="text-gray-600">No extension requests found.</p>
+                        ) : (
+                            <ul className="space-y-4">
+                                {requests.map((req) => (
+                                    <li key={req._id} className="p-4 border rounded-lg shadow-sm bg-gray-50">
+                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                                            <div className="mb-4 md:mb-0">
+                                                <p className="font-medium">Request ID: <span className="text-gray-700">{req._id}</span></p>
+
+                                                {/* Always display date range instead of days */}
+                                                <div className="space-y-1 mt-2">
+                                                    <div className="flex items-center text-gray-700">
+                                                        <CalendarIcon className="w-4 h-4 mr-2 text-green-500" />
+                                                        <span>
+                                                            From: {req.fromDate && !isNaN(new Date(req.fromDate))
+                                                                ? new Date(req.fromDate).toLocaleDateString('en-US', {
+                                                                    year: 'numeric',
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                })
+                                                                : 'Not specified'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center text-gray-700">
+                                                        <CalendarIcon className="w-4 h-4 mr-2 text-red-500" />
+                                                        <span>
+                                                            To: {req.toDate && !isNaN(new Date(req.toDate))
+                                                                ? new Date(req.toDate).toLocaleDateString('en-US', {
+                                                                    year: 'numeric',
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                })
+                                                                : 'Not specified'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+
+                                                <p className="font-medium mt-2">Status: <span className={`font-semibold ${req.status === "Pending" ? "text-yellow-600" :
+                                                        req.status === "Accepted" ? "text-green-600" : "text-red-600"
+                                                    }`}>{req.status}</span></p>
+                                            </div>
+
+
+                                            {req.status === "Pending" && (
+                                                <HandleExtensionRequest requestId={req._id} />
+                                            )}
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+
                     {/* Subscriptions Section */}
                     <div className="mb-10">
                         <div className="flex items-center mb-6">
@@ -317,7 +409,7 @@ export default function Profile() {
                                 {subscriptions.length} {subscriptions.length === 1 ? 'subscription' : 'subscriptions'}
                             </div>
                         </div>
-                        
+
                         {errorSubscriptions ? (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
                                 {errorSubscriptions}
@@ -330,13 +422,13 @@ export default function Profile() {
                                         className="bg-white rounded-xl shadow-lg overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1"
                                     >
                                         <div className={`p-2 text-center text-white font-medium 
-                                            ${subscription.status === "Active" 
-                                                ? "bg-gradient-to-r from-green-400 to-green-600" 
+                                            ${subscription.status === "Active"
+                                                ? "bg-gradient-to-r from-green-400 to-green-600"
                                                 : "bg-gradient-to-r from-gray-400 to-gray-600"}`}
                                         >
                                             {subscription.status}
                                         </div>
-                                        
+
                                         <div className="p-5">
                                             <div className="flex justify-between items-center mb-4">
                                                 <h3 className="text-lg font-semibold text-gray-800">
@@ -346,38 +438,26 @@ export default function Profile() {
                                                     {subscription.user.contactNo}
                                                 </div>
                                             </div>
-                                            
+
                                             <div className="space-y-3 mb-4">
                                                 <div className="flex items-center text-gray-600">
                                                     <CalendarIcon className="w-4 h-4 mr-2 text-green-500" />
-                                                    <span className="text-sm">Start: {new Date(subscription.startDate).toLocaleDateString('en-US', { 
-                                                        year: 'numeric', 
-                                                        month: 'short', 
-                                                        day: 'numeric' 
+                                                    <span className="text-sm">Start: {new Date(subscription.startDate).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric'
                                                     })}</span>
                                                 </div>
-                                                
+
                                                 <div className="flex items-center text-gray-600">
                                                     <CalendarIcon className="w-4 h-4 mr-2 text-red-500" />
-                                                    <span className="text-sm">End: {new Date(subscription.expiry).toLocaleDateString('en-US', { 
-                                                        year: 'numeric', 
-                                                        month: 'short', 
-                                                        day: 'numeric' 
+                                                    <span className="text-sm">End: {new Date(subscription.expiry).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric'
                                                     })}</span>
                                                 </div>
                                             </div>
-                                            
-                                            {/* <div className="mt-4">
-                                                <button
-                                                    onClick={() => router.push(subscription?._id)}
-                                                    className="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium shadow-md hover:from-blue-600 hover:to-purple-700 transition-colors flex items-center justify-center"
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                                    </svg>
-                                                    Extend Subscription
-                                                </button>
-                                            </div> */}
                                         </div>
                                     </div>
                                 ))}
@@ -391,7 +471,7 @@ export default function Profile() {
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-800 mb-2">No Subscriptions Found</h3>
                                 <p className="text-gray-600 mb-6">You don't have any active subscriptions at the moment.</p>
-                                <button 
+                                <button
                                     onClick={() => router.push('/browse')}
                                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md"
                                 >

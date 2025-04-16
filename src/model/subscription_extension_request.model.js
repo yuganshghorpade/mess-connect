@@ -13,17 +13,22 @@ const subscriptionExtensionRequestSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: Mess,
         },
-        days:{
-            type: Number
+        fromDate: {
+            type: Date,
+            required: true,
         },
-        subscription:{
+        toDate: {
+            type: Date,
+            required: true,
+        },
+        subscription: {
             type: mongoose.Schema.Types.ObjectId,
             ref: Subscription,
         },
         status: {
             type: String,
-            enum: ["Pending","Accepted","Rejected"],
-            default: "Active",
+            enum: ["Pending", "Accepted", "Rejected"],
+            default: "Pending",
         },
     },
     {

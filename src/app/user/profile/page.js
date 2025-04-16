@@ -23,13 +23,16 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [days, setDays] = useState(0);
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
     const router = useRouter();
 
     const requestExtension = async (id) => {
         try {
+            // Changed parameter names to match API expectations
             const response = await axios.post(
                 `/api/subscriptions/extend-subscription-request?subscriptionId=${id}`,
-                {days},
+                { fromDate: startDate, toDate: endDate },
                 { withCredentials: true }
             );
             if (!response.data.success) {
@@ -141,7 +144,7 @@ export default function ProfilePage() {
                                     <div className="flex flex-col items-center text-center">
                                         <div className="w-40 h-40 rounded-full border-4 border-blue-200 shadow-lg overflow-hidden">
                                             <Image
-                                                src="/photo.png"
+                                                src=""
                                                 alt="User Profile"
                                                 width={160}
                                                 height={160}
@@ -218,9 +221,9 @@ export default function ProfilePage() {
                                                     <CardTitle className="text-xl">
                                                         {subscription.mess
                                                             ? subscription.mess
-                                                                  .name
+                                                                .name
                                                             : subscription.user
-                                                                  .username}
+                                                                .username}
                                                     </CardTitle>
                                                 </CardHeader>
                                                 <CardContent className="space-y-2">
@@ -270,16 +273,32 @@ export default function ProfilePage() {
                                                                 </Button>
                                                             </PopoverTrigger>
                                                             <PopoverContent className="w-64 space-y-3">
-                                                                <Input
-                                                                    value = {days}
-                                                                    onChange={(e) => {
-                                                                        setDays(e.target.value)
-                                                                    }}
-                                                                    type="number"
-                                                                    placeholder="Enter number of days"
-                                                                />
-                                                                <Button className="w-full"
-                                                                onClick={() => requestExtension(subscription._id)}
+                                                                <div className="space-y-2">
+                                                                    <p className="text-sm text-gray-500">Select date range</p>
+                                                                    
+                                                                    <div className="space-y-1">
+                                                                        <label className="text-xs" htmlFor="start-date">From</label>
+                                                                        <Input
+                                                                            id="start-date" 
+                                                                            type="date"
+                                                                            value={startDate}
+                                                                            onChange={(e) => setStartDate(e.target.value)}
+                                                                        />
+                                                                    </div>
+                                                                    
+                                                                    <div className="space-y-1">
+                                                                        <label className="text-xs" htmlFor="end-date">To</label>
+                                                                        <Input
+                                                                            id="end-date"
+                                                                            type="date"
+                                                                            value={endDate}
+                                                                            onChange={(e) => setEndDate(e.target.value)}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <Button 
+                                                                    className="w-full"
+                                                                    onClick={() => requestExtension(subscription._id)}
                                                                 >
                                                                     Submit
                                                                     Request

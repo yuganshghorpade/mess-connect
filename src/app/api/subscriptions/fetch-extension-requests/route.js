@@ -7,35 +7,41 @@ export async function GET(request) {
     await dbConnect();
 
     try {
-        const {id,type} = await getDataFromToken(request);
+        const { id, type } = await getDataFromToken(request);
 
-        if(type=="user"){
+      
+        if (type === "user") {
             return NextResponse.json({
-                success:false,
-                message:"Bad Request"
-            },{
-                status:402
-            })
+                success: false,
+                message: "Unauthorized access by user",
+            }, {
+                status: 403
+            });
         }
 
-        const extension_requests = await Subscription_Extension_Request.find({
-            mess:id
+      
+        const extension_requests = await Subscription_Extension_Request
+        .find({ mess: id })
+        .select("fromDate toDate status _id");
+    
+
+        console.log("Fetched Extension Requests:", extension_requests); 
+
+        return NextResponse.json({
+            success: true,
+            message: "Fetched extension requests successfully",
+            extension_requests
+        }, {
+            status: 200
         });
 
-        return NextResponse.json({
-            success:true,
-            message:"Subscription Extension Request created successfully",
-            extension_requests
-        },{
-            status:200
-        })
-
     } catch (error) {
+        console.error("Error fetching extension requests:", error);
         return NextResponse.json({
-            success:false,
-            message:`Some error occured while creating Subscription Extension Request.Error:-${error}`
-        },{
-            status:500
-        })
+            success: false,
+            message: `Error occurred: ${error.message}`
+        }, {
+            status: 500
+        });
     }
 }
