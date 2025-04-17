@@ -59,12 +59,20 @@ const SalesAnalysisDashboard = () => {
 
   // Function to filter data by date range
   const filterDataByDateRange = (data, range) => {
-    if (!data.length) return;
+    if (!data || !data.length) return;
     
     const { from, to } = range;
+    
+    // Create start and end dates with time set to beginning and end of day
+    const startDate = new Date(from);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(to);
+    endDate.setHours(23, 59, 59, 999);
+    
     const filteredData = data.filter(sale => {
       const saleDate = new Date(sale.createdAt);
-      return saleDate >= from && saleDate <= to;
+      return saleDate >= startDate && saleDate <= endDate;
     });
     
     setFilteredData(filteredData);
@@ -225,6 +233,14 @@ const SalesAnalysisDashboard = () => {
       setDateRange({ from: fromDate, to: toDate });
     };
 
+    // Function to handle "Today" button click
+    const handleTodayClick = () => {
+      const today = new Date();
+      setFromDate(today);
+      setToDate(today);
+      setDateRange({ from: today, to: today });
+    };
+
     return (
       <div className="flex flex-col md:flex-row gap-4 mb-6 p-4 bg-muted rounded-lg">
         <div className="flex flex-col md:flex-row gap-4">
@@ -247,12 +263,13 @@ const SalesAnalysisDashboard = () => {
             />
           </div>
         </div>
-        <div className="flex items-end">
+        <div className="flex items-end gap-2">
           <Button onClick={handleApply} className="bg-primary text-white">
             Apply Filter
           </Button>
-        </div>
-        <div className="flex items-end">
+          <Button variant="outline" onClick={handleTodayClick}>
+            Today
+          </Button>
           <Button variant="outline" onClick={() => {
             const today = new Date();
             const thirtyDaysAgo = new Date(today);
@@ -309,6 +326,7 @@ const SalesAnalysisDashboard = () => {
       <div className="mb-6">
         <p className="text-lg font-medium">
           Analyzing data from {format(dateRange.from, 'dd MMM yyyy')} to {format(dateRange.to, 'dd MMM yyyy')}
+          {format(dateRange.from, 'yyyy-MM-dd') === format(dateRange.to, 'yyyy-MM-dd') && " (Full Day)"}
         </p>
       </div>
       
@@ -342,6 +360,16 @@ const SalesAnalysisDashboard = () => {
         </Card>
       </div>
       
+      {/* No data message */}
+      {filteredData.length === 0 && (
+        <Alert className="mb-6">
+          <AlertTitle>No sales data available for the selected date range</AlertTitle>
+          <AlertDescription>
+            Try selecting a different date range or check if there are any transactions recorded.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {/* Tabs for different analysis views */}
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
@@ -357,17 +385,23 @@ const SalesAnalysisDashboard = () => {
               <CardTitle>Daily Revenue Trend</CardTitle>
             </CardHeader>
             <CardContent className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dailyRevenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="displayDate" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="revenue" stroke="#8884d8" name="Revenue (₹)" />
-                  <Line type="monotone" dataKey="transactions" stroke="#82ca9d" name="Transactions" />
-                </LineChart>
-              </ResponsiveContainer>
+              {dailyRevenueData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dailyRevenueData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="displayDate" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="revenue" stroke="#8884d8" name="Revenue (₹)" />
+                    <Line type="monotone" dataKey="transactions" stroke="#82ca9d" name="Transactions" />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">No revenue data available for the selected period</p>
+                </div>
+              )}
             </CardContent>
           </Card>
           
@@ -377,16 +411,22 @@ const SalesAnalysisDashboard = () => {
                 <CardTitle>Top Selling Items</CardTitle>
               </CardHeader>
               <CardContent className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={topSellingItemsData.slice(0, 5)} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={100} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="quantity" fill="#8884d8" name="Quantity Sold" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {topSellingItemsData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={topSellingItemsData.slice(0, 5)} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="name" type="category" width={100} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="quantity" fill="#8884d8" name="Quantity Sold" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">No item data available for the selected period</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
             
@@ -395,26 +435,32 @@ const SalesAnalysisDashboard = () => {
                 <CardTitle>Sales by Category</CardTitle>
               </CardHeader>
               <CardContent className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryDistributionData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {categoryDistributionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`₹${value}`, 'Revenue']} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                {categoryDistributionData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryDistributionData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {categoryDistributionData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => [`₹${value}`, 'Revenue']} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">No category data available for the selected period</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -426,18 +472,24 @@ const SalesAnalysisDashboard = () => {
               <CardTitle>Daily Revenue Breakdown</CardTitle>
             </CardHeader>
             <CardContent className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailyRevenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="displayDate" />
-                  <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-                  <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-                  <Tooltip />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="revenue" fill="#8884d8" name="Revenue (₹)" />
-                  <Bar yAxisId="right" dataKey="transactions" fill="#82ca9d" name="Transactions" />
-                </BarChart>
-              </ResponsiveContainer>
+              {dailyRevenueData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dailyRevenueData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="displayDate" />
+                    <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+                    <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+                    <Tooltip />
+                    <Legend />
+                    <Bar yAxisId="left" dataKey="revenue" fill="#8884d8" name="Revenue (₹)" />
+                    <Bar yAxisId="right" dataKey="transactions" fill="#82ca9d" name="Transactions" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">No revenue data available for the selected period</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -448,17 +500,23 @@ const SalesAnalysisDashboard = () => {
               <CardTitle>Top 10 Best Selling Items</CardTitle>
             </CardHeader>
             <CardContent className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topSellingItemsData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={120} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="quantity" fill="#8884d8" name="Quantity Sold" />
-                  <Bar dataKey="revenue" fill="#82ca9d" name="Revenue (₹)" />
-                </BarChart>
-              </ResponsiveContainer>
+              {topSellingItemsData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={topSellingItemsData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={120} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="quantity" fill="#8884d8" name="Quantity Sold" />
+                    <Bar dataKey="revenue" fill="#82ca9d" name="Revenue (₹)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">No item data available for the selected period</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -470,26 +528,32 @@ const SalesAnalysisDashboard = () => {
                 <CardTitle>Revenue by Category</CardTitle>
               </CardHeader>
               <CardContent className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryDistributionData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {categoryDistributionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`₹${value}`, 'Revenue']} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                {categoryDistributionData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryDistributionData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {categoryDistributionData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => [`₹${value}`, 'Revenue']} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">No category data available for the selected period</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
             
@@ -498,16 +562,22 @@ const SalesAnalysisDashboard = () => {
                 <CardTitle>Items Sold by Category</CardTitle>
               </CardHeader>
               <CardContent className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={categoryDistributionData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="count" fill="#8884d8" name="Items Sold" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {categoryDistributionData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={categoryDistributionData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="count" fill="#8884d8" name="Items Sold" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">No category data available for the selected period</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

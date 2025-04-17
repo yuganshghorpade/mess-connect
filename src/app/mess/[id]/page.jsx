@@ -227,19 +227,20 @@
 
 // export default Page;
 
-
 'use client';
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertTriangle, MapPin, Phone, List } from "lucide-react";
+import { Loader2, AlertTriangle, MapPin, Phone, List, Download, FileText } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import Header from "@/app/user/header/page";
 import Footer from "@/components/ui/footer";
 import Image from "next/image";
 import ReviewRatings from "@/components/ReviewRatings";
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 // Razorpay script loader
 const loadRazorpayScript = () => {
@@ -250,6 +251,80 @@ const loadRazorpayScript = () => {
     script.onerror = () => resolve(false);
     document.body.appendChild(script);
   });
+};
+
+// Receipt Component
+const Receipt = ({ receiptData, onClose }) => {
+  const receiptRef = useRef(null);
+
+  const downloadAsPDF = () => {
+    const receipt = receiptRef.current;
+    
+    html2canvas(receipt).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${receiptData.messName}-receipt.pdf`);
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Subscription Receipt</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            ✕
+          </button>
+        </div>
+        
+        <div ref={receiptRef} className="border border-gray-300 rounded-lg p-6 mb-4">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-bold">Mess Subscription Receipt</h3>
+            <div className="text-sm text-gray-500">
+              Receipt #: {receiptData.paymentId.slice(-8)}
+            </div>
+          </div>
+          
+          <div className="mb-6">
+            <h4 className="font-semibold mb-2">Mess Details</h4>
+            <p><span className="font-medium">Name:</span> {receiptData.messName}</p>
+            <p><span className="font-medium">Address:</span> {receiptData.messAddress}</p>
+          </div>
+          
+          <div className="mb-6">
+            <h4 className="font-semibold mb-2">Subscription Details</h4>
+            <p><span className="font-medium">Meal Type:</span> {receiptData.mealType}</p>
+            <p><span className="font-medium">Duration:</span> {receiptData.duration}</p>
+            <p><span className="font-medium">Start Date:</span> {receiptData.startDate}</p>
+            <p><span className="font-medium">End Date:</span> {receiptData.endDate}</p>
+          </div>
+          
+          <div className="mb-6">
+            <h4 className="font-semibold mb-2">Payment Details</h4>
+            <p><span className="font-medium">Payment ID:</span> {receiptData.paymentId}</p>
+            <p><span className="font-medium">Amount Paid:</span> ₹{receiptData.amountPaid}</p>
+            <p><span className="font-medium">Payment Date:</span> {receiptData.paymentDate}</p>
+          </div>
+          
+          <div className="text-center mt-8 text-sm text-gray-500">
+            <p>Thank you for your subscription!</p>
+          </div>
+        </div>
+        
+        <button 
+          onClick={downloadAsPDF} 
+          className="flex items-center justify-center w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Download Receipt as PDF
+        </button>
+      </div>
+    </div>
+  );
 };
 
 function Page() {
@@ -268,6 +343,8 @@ function Page() {
     review: ""
   });
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptData, setReceiptData] = useState(null);
 
   const { toast } = useToast();
 
@@ -305,6 +382,47 @@ function Page() {
     fetchData();
   }, []);
 
+  const calculateDates = (durationType) => {
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    
+    switch(durationType) {
+      case "monthly":
+        endDate.setMonth(endDate.getMonth() + 1);
+        break;
+      case "quarterly":
+        endDate.setMonth(endDate.getMonth() + 3);
+        break;
+      case "yearly":
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        break;
+      default:
+        endDate.setMonth(endDate.getMonth() + 1);
+    }
+    
+    return {
+      startDate: startDate.toLocaleDateString(),
+      endDate: endDate.toLocaleDateString()
+    };
+  };
+
+  const generateReceiptData = (paymentInfo, amount) => {
+    const { startDate, endDate } = calculateDates(duration);
+    
+    return {
+      messName: userData.name,
+      messAddress: userData.address,
+      mealType: mealType,
+      duration: duration === "monthly" ? "Monthly" : 
+               duration === "quarterly" ? "Quarterly" : "Yearly",
+      startDate: startDate,
+      endDate: endDate,
+      paymentId: paymentInfo.razorpay_payment_id,
+      amountPaid: (amount / 100).toFixed(2),
+      paymentDate: new Date().toLocaleDateString()
+    };
+  };
+
   const handleSubscribe = async () => {
     if (!duration || !mealType) {
       toast({
@@ -333,8 +451,6 @@ function Page() {
         withCredentials: true,
       });
 
-      console.log("response",response.data);
-
       if (response.status === 200) {
         const { amount, id: order_id } = response.data;
 
@@ -361,6 +477,12 @@ function Page() {
                   title: "Subscription Successful",
                   description: "You have successfully subscribed to the mess!",
                 });
+                
+                // Generate receipt data and show receipt
+                const receiptInfo = generateReceiptData(responseData, amount);
+                setReceiptData(receiptInfo);
+                setShowReceipt(true);
+                
               } else {
                 toast({
                   title: "Subscription Failed",
@@ -496,6 +618,30 @@ function Page() {
                   Subscribe Now
                 </button>
 
+                {/* Receipt View Button (for testing) */}
+                {/*
+                <button
+                  onClick={() => {
+                    const testReceiptData = {
+                      messName: userData.name,
+                      messAddress: userData.address,
+                      mealType: mealType,
+                      duration: "Monthly",
+                      startDate: new Date().toLocaleDateString(),
+                      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleDateString(),
+                      paymentId: "pay_" + Math.random().toString(36).substr(2, 9),
+                      amountPaid: "1200.00",
+                      paymentDate: new Date().toLocaleDateString()
+                    };
+                    setReceiptData(testReceiptData);
+                    setShowReceipt(true);
+                  }}
+                  className="bg-gray-600 text-white px-4 py-2 rounded-md mt-2"
+                >
+                  View Sample Receipt (Test)
+                </button>
+                */}
+
                 <ReviewRatings />
               </div>
             </div>
@@ -504,6 +650,33 @@ function Page() {
           <p>No user data available</p>
         )}
       </div>
+
+      {/* Receipt Modal */}
+      {showReceipt && receiptData && (
+        <Receipt 
+          receiptData={receiptData}
+          onClose={() => setShowReceipt(false)}
+        />
+      )}
+
+      {/* View Receipt History Button */}
+      {userData && (
+        <div className="container mx-auto px-6 mb-6">
+          <button
+            onClick={() => {
+              toast({
+                title: "Receipt History",
+                description: "This feature will allow you to view all your past receipts.",
+              });
+            }}
+            className="flex items-center justify-center bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            View Receipt History
+          </button>
+        </div>
+      )}
+
       <Toaster />
       <Footer />
     </div>
