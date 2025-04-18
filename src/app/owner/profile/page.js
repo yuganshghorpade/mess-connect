@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { MapPinIcon, UserCircleIcon, CalendarIcon, CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import { toast } from "sonner";
 
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
 const HandleExtensionRequest = ({ requestId }) => {
     const [loading, setLoading] = useState(false);
 
@@ -67,8 +70,12 @@ export default function Profile() {
     const [locationError, setLocationError] = useState("");
     const [loadingDetails, setLoadingDetails] = useState(null);
     const [requests, setRequests] = useState([]);
+    const [downloadingSubscribers, setDownloadingSubscribers] = useState(false);
     const router = useRouter();
     const [responseMsg, setResponseMsg] = useState("");
+    const [startFilterDate, setStartFilterDate] = useState("");
+    const [endFilterDate, setEndFilterDate] = useState("");
+    const [isFilteringDates, setIsFilteringDates] = useState(false);
 
     const setMessLocation = async () => {
         setLoadingDetails("location");
@@ -112,6 +119,316 @@ export default function Profile() {
 
         fetchLocation();
     };
+
+    // Function to download active subscribers list
+    // const downloadActiveSubscribers = () => {
+    //     setDownloadingSubscribers(true);
+
+    //     try {
+    //         // Filter active subscriptions
+    //         const activeSubscriptions = subscriptions.filter(sub => sub.status === "Active");
+
+    //         if (activeSubscriptions.length === 0) {
+    //             toast.error("No active subscribers to download");
+    //             setDownloadingSubscribers(false);
+    //             return;
+    //         }
+
+    //         // Create CSV content
+    //         let csvContent = "User Name,Contact Number,Email,Start Date,End Date\n";
+
+    //         activeSubscriptions.forEach(sub => {
+    //             const startDate = new Date(sub.startDate).toLocaleDateString('en-US');
+    //             const endDate = new Date(sub.expiry).toLocaleDateString('en-US');
+    //             const email = sub.user.email || "N/A";
+
+    //             csvContent += `${sub.user.username},${sub.user.contactNo || "N/A"},${email},${startDate},${endDate}\n`;
+    //         });
+
+    //         // Create download link
+    //         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    //         const url = URL.createObjectURL(blob);
+    //         const link = document.createElement("a");
+
+    //         // Set download attributes
+    //         const currentDate = new Date().toLocaleDateString('en-US', {
+    //             year: 'numeric',
+    //             month: 'short',
+    //             day: 'numeric'
+    //         }).replace(/,/g, '');
+
+    //         link.setAttribute("href", url);
+    //         link.setAttribute("download", `active-subscribers-${currentDate}.csv`);
+    //         document.body.appendChild(link);
+
+    //         // Trigger download and cleanup
+    //         link.click();
+    //         document.body.removeChild(link);
+    //         URL.revokeObjectURL(url);
+
+    //         toast.success("Subscribers list downloaded successfully!");
+    //     } catch (error) {
+    //         console.error("Error downloading subscribers:", error);
+    //         toast.error("Failed to download subscribers list");
+    //     } finally {
+    //         setDownloadingSubscribers(false);
+    //     }
+    // };
+    // const downloadActiveSubscribers = () => {
+    //     setDownloadingSubscribers(true);
+
+    //     const activeSubs = subscriptions.filter(sub => sub.status === "Active");
+
+    //     const doc = new jsPDF();
+    //     doc.text("Active Subscribers List", 14, 20);
+
+    //     autoTable(doc, {
+    //         head: [['Name', 'Email', 'Start Date', 'End Date']],
+    //         body: activeSubs.map(sub => [
+    //             sub.name,
+    //             sub.email,
+    //             formatDate(sub.startDate),
+    //             formatDate(sub.endDate)
+    //         ])
+    //     });
+
+    //     doc.save("active_subscribers.pdf");
+
+    //     setDownloadingSubscribers(false);
+    // };
+
+
+    // const downloadActiveSubscribers = () => {
+    //     setDownloadingSubscribers(true);
+
+    //     try {
+    //         const activeSubscriptions = subscriptions.filter(sub => sub.status === "Active");
+
+    //         if (activeSubscriptions.length === 0) {
+    //             toast.error("No active subscribers to download");
+    //             setDownloadingSubscribers(false);
+    //             return;
+    //         }
+
+    //         const doc = new jsPDF();
+    //         doc.text("Active Subscribers List", 14, 20);
+
+    //         // Table Header and Rows
+    //         const tableHead = [["User Name", "Contact Number", "Email", "Start Date", "End Date"]];
+    //         const tableBody = activeSubscriptions.map(sub => [
+    //             sub.user?.username || "N/A",
+    //             sub.user?.contactNo || "N/A",
+    //             sub.user?.email || "N/A",
+    //             new Date(sub.startDate).toLocaleDateString("en-US"),
+    //             new Date(sub.expiry).toLocaleDateString("en-US")
+    //         ]);
+
+    //         autoTable(doc, {
+    //             startY: 30,
+    //             head: tableHead,
+    //             body: tableBody,
+    //         });
+
+    //         // Filename with current date
+    //         const currentDate = new Date().toLocaleDateString("en-US", {
+    //             year: "numeric",
+    //             month: "short",
+    //             day: "numeric"
+    //         }).replace(/,/g, '');
+
+    //         doc.save(`active-subscribers-${currentDate}.pdf`);
+
+    //         toast.success("Subscribers list downloaded successfully!");
+    //     } catch (error) {
+    //         console.error("Error downloading subscribers:", error);
+    //         toast.error("Failed to download subscribers list");
+    //     } finally {
+    //         setDownloadingSubscribers(false);
+    //     }
+    // };
+    // const downloadActiveSubscribers = () => {
+    //     setDownloadingSubscribers(true);
+
+    //     try {
+    //         // Get active subscriptions
+    //         let activeSubscriptions = subscriptions.filter(sub => sub.status === "Active");
+
+    //         // Apply date filtering if enabled
+    //         if (isFilteringDates && startFilterDate && endFilterDate) {
+    //             const startDate = new Date(startFilterDate);
+    //             const endDate = new Date(endFilterDate);
+
+    //             // Filter subscriptions that fall within the date range
+    //             // A subscription is considered within range if its period overlaps with the filter range
+    //             activeSubscriptions = activeSubscriptions.filter(sub => {
+    //                 const subStartDate = new Date(sub.startDate);
+    //                 const subEndDate = new Date(sub.expiry);
+
+    //                 // Check if subscription overlaps with the filter date range
+    //                 return (
+    //                     (subStartDate <= endDate && subEndDate >= startDate)
+    //                 );
+    //             });
+    //         }
+
+    //         if (activeSubscriptions.length === 0) {
+    //             toast.error("No active subscribers found for the selected criteria");
+    //             setDownloadingSubscribers(false);
+    //             return;
+    //         }
+
+    //         const doc = new jsPDF();
+
+    //         // Add title with date range if filtering
+    //         if (isFilteringDates && startFilterDate && endFilterDate) {
+    //             doc.text(`Active Subscribers List (${format(new Date(startFilterDate), "MMM d, yyyy")} - ${format(new Date(endFilterDate), "MMM d, yyyy")})`, 14, 20);
+    //         } else {
+    //             doc.text("Active Subscribers List", 14, 20);
+    //         }
+
+    //         // Table Header and Rows
+    //         const tableHead = [["User Name", "Contact Number", "Email", "Start Date", "End Date"]];
+    //         const tableBody = activeSubscriptions.map(sub => [
+    //             sub.user?.username || "N/A",
+    //             sub.user?.contactNo || "N/A",
+    //             sub.user?.email || "N/A",
+    //             new Date(sub.startDate).toLocaleDateString("en-US"),
+    //             new Date(sub.expiry).toLocaleDateString("en-US")
+    //         ]);
+
+    //         autoTable(doc, {
+    //             startY: 30,
+    //             head: tableHead,
+    //             body: tableBody,
+    //         });
+
+    //         // Filename with current date and filter info
+    //         const currentDate = new Date().toLocaleDateString("en-US", {
+    //             year: "numeric",
+    //             month: "short",
+    //             day: "numeric"
+    //         }).replace(/,/g, '');
+
+    //         let filename = `active-subscribers-${currentDate}`;
+    //         if (isFilteringDates && startFilterDate && endFilterDate) {
+    //             const startFormatted = format(new Date(startFilterDate), "MMM-d-yyyy");
+    //             const endFormatted = format(new Date(endFilterDate), "MMM-d-yyyy");
+    //             filename = `active-subscribers-${startFormatted}-to-${endFormatted}`;
+    //         }
+
+    //         doc.save(`${filename}.pdf`);
+    //         toast.success("Subscribers list downloaded successfully!");
+    //     } catch (error) {
+    //         console.error("Error downloading subscribers:", error);
+    //         toast.error("Failed to download subscribers list");
+    //     } finally {
+    //         setDownloadingSubscribers(false);
+    //     }
+    // };
+    const formatDate = (dateString, formatType = "display") => {
+        const date = new Date(dateString);
+        
+        if (formatType === "display") {
+            // Format like "Jan 5, 2023"
+            return date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            });
+        } else if (formatType === "filename") {
+            // Format like "Jan-5-2023"
+            return date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            }).replace(/,\s/g, "-").replace(/\s/g, "-");
+        }
+        
+        return dateString;
+    };
+    
+    // Updated download function with date filtering
+    const downloadActiveSubscribers = () => {
+        setDownloadingSubscribers(true);
+    
+        try {
+            // Get active subscriptions
+            let activeSubscriptions = subscriptions.filter(sub => sub.status === "Active");
+            
+            // Apply date filtering if enabled
+            if (isFilteringDates && startFilterDate && endFilterDate) {
+                const startDate = new Date(startFilterDate);
+                const endDate = new Date(endFilterDate);
+                
+                // Filter subscriptions that fall within the date range
+                // A subscription is considered within range if its period overlaps with the filter range
+                activeSubscriptions = activeSubscriptions.filter(sub => {
+                    const subStartDate = new Date(sub.startDate);
+                    const subEndDate = new Date(sub.expiry);
+                    
+                    // Check if subscription overlaps with the filter date range
+                    return (
+                        (subStartDate <= endDate && subEndDate >= startDate)
+                    );
+                });
+            }
+    
+            if (activeSubscriptions.length === 0) {
+                toast.error("No active subscribers found for the selected criteria");
+                setDownloadingSubscribers(false);
+                return;
+            }
+    
+            const doc = new jsPDF();
+            
+            // Add title with date range if filtering
+            if (isFilteringDates && startFilterDate && endFilterDate) {
+                doc.text(`Active Subscribers List (${formatDate(startFilterDate)} - ${formatDate(endFilterDate)})`, 14, 20);
+            } else {
+                doc.text("Active Subscribers List", 14, 20);
+            }
+    
+            // Table Header and Rows
+            const tableHead = [["User Name", "Contact Number", "Email", "Start Date", "End Date"]];
+            const tableBody = activeSubscriptions.map(sub => [
+                sub.user?.username || "N/A",
+                sub.user?.contactNo || "N/A",
+                sub.user?.email || "N/A",
+                new Date(sub.startDate).toLocaleDateString("en-US"),
+                new Date(sub.expiry).toLocaleDateString("en-US")
+            ]);
+    
+            autoTable(doc, {
+                startY: 30,
+                head: tableHead,
+                body: tableBody,
+            });
+    
+            // Filename with current date and filter info
+            const currentDate = new Date().toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            }).replace(/,/g, '');
+            
+            let filename = `active-subscribers-${currentDate}`;
+            if (isFilteringDates && startFilterDate && endFilterDate) {
+                const startFormatted = formatDate(startFilterDate, "filename");
+                const endFormatted = formatDate(endFilterDate, "filename");
+                filename = `active-subscribers-${startFormatted}-to-${endFormatted}`;
+            }
+    
+            doc.save(`${filename}.pdf`);
+            toast.success("Subscribers list downloaded successfully!");
+        } catch (error) {
+            console.error("Error downloading subscribers:", error);
+            toast.error("Failed to download subscribers list");
+        } finally {
+            setDownloadingSubscribers(false);
+        }
+    };
+    
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -177,9 +494,6 @@ export default function Profile() {
         fetchSubscriptions();
         fetchRequests();
     }, []);
-
-
-
 
     if (loadingUser || loadingSubscriptions) {
         return (
@@ -386,7 +700,7 @@ export default function Profile() {
 
 
                                                 <p className="font-medium mt-2">Status: <span className={`font-semibold ${req.status === "Pending" ? "text-yellow-600" :
-                                                        req.status === "Accepted" ? "text-green-600" : "text-red-600"
+                                                    req.status === "Accepted" ? "text-green-600" : "text-red-600"
                                                     }`}>{req.status}</span></p>
                                             </div>
 
@@ -403,11 +717,193 @@ export default function Profile() {
 
                     {/* Subscriptions Section */}
                     <div className="mb-10">
-                        <div className="flex items-center mb-6">
-                            <h2 className="text-2xl font-bold text-gray-800">Your Subscriptions</h2>
-                            <div className="ml-4 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                                {subscriptions.length} {subscriptions.length === 1 ? 'subscription' : 'subscriptions'}
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                            <div className="flex items-center mb-4 md:mb-0">
+                                <h2 className="text-2xl font-bold text-gray-800">Your Subscriptions</h2>
+                                <div className="ml-4 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                    {subscriptions.length} {subscriptions.length === 1 ? 'subscription' : 'subscriptions'}
+                                </div>
                             </div>
+
+                            {/* Download Button - Only show for mess owners */}
+                            {/*                             
+                            <button
+            onClick={downloadActiveSubscribers}
+            disabled={
+                downloadingSubscribers ||
+                subscriptions.filter(sub => sub.status === "Active").length === 0
+            }
+            className={`flex items-center px-4 py-2 rounded-lg shadow-md transition-all ${
+                downloadingSubscribers || subscriptions.filter(sub => sub.status === "Active").length === 0
+                    ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                    : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg"
+            }`}
+        >
+            {downloadingSubscribers ? (
+                <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Downloading...
+                </>
+            ) : (
+                <>
+                    <svg className="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download PDF Subscribers List
+                </>
+            )}
+        </button> */}
+                            {/* <div className="flex flex-col md:flex-row items-center gap-4">
+                                <div className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        id="filterByDate"
+                                        checked={isFilteringDates}
+                                        onChange={() => setIsFilteringDates(!isFilteringDates)}
+                                        className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="filterByDate" className="text-sm text-gray-700">
+                                        Filter by date range
+                                    </label>
+                                </div>
+
+                                {isFilteringDates && (
+                                    <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
+                                        <div className="flex items-center">
+                                            <label htmlFor="startDate" className="text-sm text-gray-700 mr-2">
+                                                From:
+                                            </label>
+                                            <input
+                                                type="date"
+                                                id="startDate"
+                                                value={startFilterDate}
+                                                onChange={(e) => setStartFilterDate(e.target.value)}
+                                                className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center">
+                                            <label htmlFor="endDate" className="text-sm text-gray-700 mr-2">
+                                                To:
+                                            </label>
+                                            <input
+                                                type="date"
+                                                id="endDate"
+                                                value={endFilterDate}
+                                                onChange={(e) => setEndFilterDate(e.target.value)}
+                                                className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={downloadActiveSubscribers}
+                                    disabled={
+                                        downloadingSubscribers ||
+                                        subscriptions.filter(sub => sub.status === "Active").length === 0 ||
+                                        (isFilteringDates && (!startFilterDate || !endFilterDate))
+                                    }
+                                    className={`flex items-center px-4 py-2 rounded-lg shadow-md transition-all ${downloadingSubscribers ||
+                                            subscriptions.filter(sub => sub.status === "Active").length === 0 ||
+                                            (isFilteringDates && (!startFilterDate || !endFilterDate))
+                                            ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                                            : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg"
+                                        }`}
+                                >
+                                    {downloadingSubscribers ? (
+                                        <>
+                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Downloading...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            Download PDF Subscribers List
+                                        </>
+                                    )}
+                                </button>
+                            </div> */}
+                            {/* Replace your existing download button with this entire section */}
+                            <div className="flex flex-col md:flex-row items-center gap-4 flex-wrap">
+                                <div className="flex items-center mr-4">
+                                    <input
+                                        type="checkbox"
+                                        id="filterByDate"
+                                        checked={isFilteringDates}
+                                        onChange={() => setIsFilteringDates(!isFilteringDates)}
+                                        className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="filterByDate" className="text-sm text-gray-700">
+                                        Filter by date
+                                    </label>
+                                </div>
+
+                                {isFilteringDates && (
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <div className="flex items-center">
+                                            <span className="text-sm text-gray-700 mr-1">From:</span>
+                                            <input
+                                                type="date"
+                                                value={startFilterDate}
+                                                onChange={(e) => setStartFilterDate(e.target.value)}
+                                                className="px-2 py-1 rounded border border-gray-300 text-sm"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center ml-2">
+                                            <span className="text-sm text-gray-700 mr-1">To:</span>
+                                            <input
+                                                type="date"
+                                                value={endFilterDate}
+                                                onChange={(e) => setEndFilterDate(e.target.value)}
+                                                className="px-2 py-1 rounded border border-gray-300 text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={downloadActiveSubscribers}
+                                    disabled={
+                                        downloadingSubscribers ||
+                                        subscriptions.filter(sub => sub.status === "Active").length === 0 ||
+                                        (isFilteringDates && (!startFilterDate || !endFilterDate))
+                                    }
+                                    className={`flex items-center px-4 py-2 rounded-lg shadow-md transition-all ${downloadingSubscribers ||
+                                        subscriptions.filter(sub => sub.status === "Active").length === 0 ||
+                                        (isFilteringDates && (!startFilterDate || !endFilterDate))
+                                        ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                                        : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg"
+                                        }`}
+                                >
+                                    {downloadingSubscribers ? (
+                                        <>
+                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Downloading...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            Download PDF
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+
                         </div>
 
                         {errorSubscriptions ? (
